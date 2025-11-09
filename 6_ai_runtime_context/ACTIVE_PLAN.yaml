@@ -1,12 +1,107 @@
-plan_id: "template-initialization"
-component: "shared"
-goal: "Initialize project from this template"
+plan_id: chrome-extension-mvp-init
+component: frontend
+goal: Initialize Chrome Extension MVP with modular parser architecture, API integration,
+  and core capture features
 tasks:
-  - id: 1
-    name: "Set up project structure"
-    outputs: ["frontend/", "backend/", "shared/"]
-  - id: 2
-    name: "Configure component-specific settings"
-    outputs: []
-status: paused
-auto_commit: false
+- id: 1
+  name: Set up Chrome Extension project structure
+  outputs:
+  - manifest.json
+  - package.json
+  - tsconfig.json
+  - webpack.config.js
+  - src/ directory structure
+- id: 2
+  name: Implement base parser interface and registry
+  outputs:
+  - src/content/parsers/base-parser.ts
+  - src/content/parsers/parser-registry.ts
+  - src/shared/types/conversation.ts
+  - src/shared/types/message.ts
+- id: 3
+  name: Implement ChatGPT parser
+  outputs:
+  - src/content/parsers/chatgpt-parser.ts
+  - tests/unit/parsers/chatgpt-parser.test.ts
+- id: 4
+  name: Implement Claude parser
+  outputs:
+  - src/content/parsers/claude-parser.ts
+  - tests/unit/parsers/claude-parser.test.ts
+- id: 5
+  name: Create Second Brain API client
+  outputs:
+  - src/background/api-client.ts
+  - src/shared/types/api-request.ts
+  - src/shared/types/api-response.ts
+  - tests/unit/api-client/api-client.test.ts
+- id: 6
+  name: Implement content script and UI injection
+  outputs:
+  - src/content/content-script.ts
+  - src/content/ui-injector.ts
+  - src/styles/content.css
+- id: 7
+  name: Implement capture button component
+  outputs:
+  - src/content/ui-injector.ts (capture button)
+  - src/styles/content.css (button styles)
+- id: 8
+  name: Implement action item extraction
+  outputs:
+  - src/shared/action-extractor.ts
+  - src/shared/types/action-item.ts
+  - tests/unit/action-extractor/action-extractor.test.ts
+- id: 9
+  name: Implement offline queue manager
+  outputs:
+  - src/background/queue-manager.ts
+  - src/shared/types/queued-conversation.ts
+  - tests/unit/queue-manager/queue-manager.test.ts
+- id: 10
+  name: Implement background sync manager
+  outputs:
+  - src/background/sync-manager.ts
+  - src/background/service-worker.ts
+  - tests/integration/queue-sync-integration/queue-sync.test.ts
+- id: 11
+  name: Implement todo/task tracking
+  outputs:
+  - src/shared/types/todo.ts
+  - src/popup/todo-sidebar.ts
+  - src/styles/popup.css
+- id: 12
+  name: Create popup UI and settings panel
+  outputs:
+  - src/popup/popup.html
+  - src/popup/popup.ts
+  - src/popup/settings.ts
+  - src/styles/popup.css
+- id: 13
+  name: Set up testing infrastructure
+  outputs:
+  - jest.config.js
+  - jest.e2e.config.js
+  - tests/ directory structure
+  - tests/e2e/capture-flow.spec.ts
+- id: 14
+  name: Configure build and development scripts
+  outputs:
+  - package.json (scripts)
+  - scripts/build.sh
+  - scripts/test.sh
+  - scripts/lint.sh
+- id: 15
+  name: Write E2E tests for core capture flows
+  outputs:
+  - tests/e2e/capture-flow.spec.ts
+  - tests/e2e/offline-queue.spec.ts
+  - tests/e2e/action-extraction.spec.ts
+status: active
+auto_commit: true
+commit_frequency: checkpoint_based
+commit_checkpoints:
+  after_phases: true
+  after_task_count: 5
+  after_file_threshold: 10
+  force_commit_on_checkpoint: true

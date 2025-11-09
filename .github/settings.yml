@@ -13,4 +13,3 @@ branches:
         strict: true
         contexts: ["PR Checks"]
       enforce_admins: true
-

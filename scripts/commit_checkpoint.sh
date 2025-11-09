@@ -90,4 +90,3 @@ else
     echo -e "${RED}[commit-checkpoint] Error: Commit failed${NC}"
     exit 1
 fi
-

@@ -22,4 +22,3 @@ else:
     print("  trace     - Generate traceability graph")
     print("  review    - Run AI review")
     print("  commit-checkpoint - Commit with validation and proper message format")
-

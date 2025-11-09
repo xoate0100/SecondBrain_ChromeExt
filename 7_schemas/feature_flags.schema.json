@@ -4,10 +4,10 @@
     "title": "Feature Flags Schema (L2.5 Meta-Framework)",
     "description": "Validation schema for feature_flags.yml controlling AI sandbox, permissions, and gates.",
     "version": "1.0.0",
-  
+
     "type": "object",
     "required": ["mode", "permissions", "components", "gates"],
-  
+
     "properties": {
       "mode": {
         "type": "object",
@@ -19,7 +19,7 @@
           "human_review_required_for_merge": { "type": "boolean" }
         }
       },
-  
+
       "permissions": {
         "type": "object",
         "properties": {
@@ -27,7 +27,7 @@
           "readonly": { "type": "array", "items": { "type": "string" } }
         }
       },
-  
+
       "components": {
         "type": "object",
         "patternProperties": {
@@ -35,7 +35,7 @@
             "type": "object",
             "properties": {
               "language": { "type": "string" },
-              "package_manager": { 
+              "package_manager": {
                 "type": "string",
                 "enum": ["auto", "npm", "yarn", "pnpm", "pip", "poetry"]
               },
@@ -46,7 +46,7 @@
           }
         }
       },
-  
+
       "gates": {
         "type": "object",
         "properties": {
@@ -57,7 +57,7 @@
           "warn_on_mutation_drop": { "type": "boolean" }
         }
       },
-  
+
       "thresholds": {
         "type": "object",
         "properties": {
@@ -67,7 +67,7 @@
           "max_complexity": { "type": "integer", "minimum": 1 }
         }
       },
-  
+
       "ai_guardrails": {
         "type": "object",
         "properties": {
@@ -79,7 +79,7 @@
           "require_commit_plan_tags": { "type": "boolean" }
         }
       },
-  
+
       "meta": {
         "type": "object",
         "properties": {
@@ -90,4 +90,3 @@
       }
     }
   }
-  

@@ -131,34 +131,34 @@ second-brain-extension/
 interface ChatPlatformParser {
   /** Unique platform identifier */
   platformId: 'chatgpt' | 'claude' | 'other';
-  
+
   /** Human-readable platform name */
   platformName: string;
-  
+
   /** Check if current page matches this platform */
   detect(): boolean;
-  
+
   /** Extract full conversation from page */
   extractConversation(): Conversation | null;
-  
+
   /** Extract conversation title */
   extractTitle(): string | null;
-  
+
   /** Extract all messages from conversation */
   extractMessages(): Message[];
-  
+
   /** Get unique conversation ID from page */
   getConversationId(): string | null;
-  
+
   /** Get model name if available (e.g., "gpt-4", "claude-3-opus") */
   getModel(): string | null;
-  
+
   /** Watch for conversation changes and call callback */
   watchForChanges(callback: (conversation: Conversation) => void): void;
-  
+
   /** Stop watching for changes */
   stopWatching(): void;
-  
+
   /** Check if conversation has new messages since last check */
   hasNewMessages(lastMessageCount: number): boolean;
 }
@@ -169,22 +169,22 @@ interface ChatPlatformParser {
 abstract class BaseParser implements ChatPlatformParser {
   abstract platformId: 'chatgpt' | 'claude' | 'other';
   abstract platformName: string;
-  
+
   protected observer: MutationObserver | null = null;
   protected lastMessageCount: number = 0;
-  
+
   abstract detect(): boolean;
   abstract extractConversation(): Conversation | null;
   abstract extractTitle(): string | null;
   abstract extractMessages(): Message[];
   abstract getConversationId(): string | null;
   abstract getModel(): string | null;
-  
+
   watchForChanges(callback: (conversation: Conversation) => void): void {
     // Default implementation using MutationObserver
     const targetNode = document.body;
     const config = { childList: true, subtree: true };
-    
+
     this.observer = new MutationObserver(() => {
       const conversation = this.extractConversation();
       if (conversation && conversation.messages.length > this.lastMessageCount) {
@@ -192,17 +192,17 @@ abstract class BaseParser implements ChatPlatformParser {
         callback(conversation);
       }
     });
-    
+
     this.observer.observe(targetNode, config);
   }
-  
+
   stopWatching(): void {
     if (this.observer) {
       this.observer.disconnect();
       this.observer = null;
     }
   }
-  
+
   hasNewMessages(lastMessageCount: number): boolean {
     const currentMessages = this.extractMessages();
     return currentMessages.length > lastMessageCount;
@@ -217,28 +217,28 @@ abstract class BaseParser implements ChatPlatformParser {
 class ChatGPTParser extends BaseParser {
   platformId = 'chatgpt' as const;
   platformName = 'ChatGPT';
-  
+
   // DOM Selectors (update if ChatGPT changes structure)
   private readonly SELECTORS = {
     // Conversation container
     conversationContainer: 'main > div:first-child',
-    
+
     // Title (in sidebar or header)
     title: '[data-testid="conversation-title"]',
     titleInput: 'input[placeholder*="Untitled"]',
-    
+
     // Messages container
     messagesContainer: '[data-testid="conversation-turn"]',
-    
+
     // Individual message
     message: '[data-testid="conversation-turn"]',
     userMessage: '[data-message-author-role="user"]',
     assistantMessage: '[data-message-author-role="assistant"]',
-    
+
     // Message content
     messageContent: '[data-message-content]',
     messageText: 'div[class*="markdown"]',
-    
+
     // Conversation ID (from URL or data attribute)
     conversationId: () => {
       // Extract from URL: https://chat.openai.com/c/{id}
@@ -246,57 +246,57 @@ class ChatGPTParser extends BaseParser {
       return match ? match[1] : null;
     }
   };
-  
+
   detect(): boolean {
     return window.location.hostname.includes('chat.openai.com') ||
            window.location.hostname.includes('chatgpt.com');
   }
-  
+
   extractTitle(): string | null {
     // Try title input first
     const titleInput = document.querySelector(this.SELECTORS.titleInput) as HTMLInputElement;
     if (titleInput && titleInput.value) {
       return titleInput.value.trim();
     }
-    
+
     // Try title element
     const titleEl = document.querySelector(this.SELECTORS.title);
     if (titleEl) {
       return titleEl.textContent?.trim() || null;
     }
-    
+
     // Fallback: use first user message or "Untitled"
     const firstUserMessage = document.querySelector(this.SELECTORS.userMessage);
     if (firstUserMessage) {
       const text = firstUserMessage.textContent?.trim() || '';
       return text.substring(0, 50) || 'Untitled Conversation';
     }
-    
+
     return 'Untitled Conversation';
   }
-  
+
   extractMessages(): Message[] {
     const messages: Message[] = [];
     const messageElements = document.querySelectorAll(this.SELECTORS.message);
-    
+
     messageElements.forEach((element, index) => {
-      const role = element.hasAttribute('data-message-author-role') 
-        ? element.getAttribute('data-message-author-role') 
+      const role = element.hasAttribute('data-message-author-role')
+        ? element.getAttribute('data-message-author-role')
         : (element.querySelector(this.SELECTORS.userMessage) ? 'user' : 'assistant');
-      
-      const contentEl = element.querySelector(this.SELECTORS.messageText) || 
+
+      const contentEl = element.querySelector(this.SELECTORS.messageText) ||
                         element.querySelector(this.SELECTORS.messageContent);
-      
+
       if (!contentEl) return;
-      
+
       const content = contentEl.textContent?.trim() || '';
       if (!content) return;
-      
+
       // Extract timestamp if available
       const timestampEl = element.querySelector('time');
-      const timestamp = timestampEl?.getAttribute('datetime') || 
+      const timestamp = timestampEl?.getAttribute('datetime') ||
                        new Date().toISOString();
-      
+
       messages.push({
         role: role === 'user' ? 'user' : 'assistant',
         content: content,
@@ -307,14 +307,14 @@ class ChatGPTParser extends BaseParser {
         }
       });
     });
-    
+
     return messages;
   }
-  
+
   getConversationId(): string | null {
     return this.SELECTORS.conversationId();
   }
-  
+
   getModel(): string | null {
     // ChatGPT model is often in settings or first message metadata
     // Look for model indicator in UI
@@ -322,22 +322,22 @@ class ChatGPTParser extends BaseParser {
     if (modelIndicator) {
       return modelIndicator.getAttribute('data-model');
     }
-    
+
     // Check URL params or localStorage
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('model') || 'gpt-4'; // Default assumption
   }
-  
+
   extractConversation(): Conversation | null {
     if (!this.detect()) return null;
-    
+
     const id = this.getConversationId();
     const title = this.extractTitle();
     const messages = this.extractMessages();
     const model = this.getModel();
-    
+
     if (!id || !messages.length) return null;
-    
+
     return {
       id: id,
       title: title || 'Untitled Conversation',
@@ -351,7 +351,7 @@ class ChatGPTParser extends BaseParser {
       }
     };
   }
-  
+
   private extractConversationDate(): string | null {
     // Try to find date in sidebar or message timestamps
     const dateEl = document.querySelector('[data-date]');
@@ -370,25 +370,25 @@ class ChatGPTParser extends BaseParser {
 class ClaudeParser extends BaseParser {
   platformId = 'claude' as const;
   platformName = 'Claude';
-  
+
   private readonly SELECTORS = {
     // Conversation container
     conversationContainer: 'main, [data-conversation]',
-    
+
     // Title
     title: 'h1, [data-title]',
     titleInput: 'input[aria-label*="title"], input[placeholder*="title"]',
-    
+
     // Messages
     messagesContainer: '[data-message], .message',
     message: '[data-message], .message',
     userMessage: '[data-role="user"], .message-user',
     assistantMessage: '[data-role="assistant"], .message-assistant',
-    
+
     // Message content
     messageContent: '[data-content], .message-content',
     messageText: '.message-text, [data-text]',
-    
+
     // Conversation ID (from URL)
     conversationId: () => {
       // Claude URL pattern: https://claude.ai/chat/{id}
@@ -396,45 +396,45 @@ class ClaudeParser extends BaseParser {
       return match ? match[1] : window.location.pathname.split('/').pop() || null;
     }
   };
-  
+
   detect(): boolean {
     return window.location.hostname.includes('claude.ai');
   }
-  
+
   extractTitle(): string | null {
     const titleInput = document.querySelector(this.SELECTORS.titleInput) as HTMLInputElement;
     if (titleInput && titleInput.value) {
       return titleInput.value.trim();
     }
-    
+
     const titleEl = document.querySelector(this.SELECTORS.title);
     if (titleEl) {
       return titleEl.textContent?.trim() || null;
     }
-    
+
     return 'Untitled Conversation';
   }
-  
+
   extractMessages(): Message[] {
     const messages: Message[] = [];
     const messageElements = document.querySelectorAll(this.SELECTORS.message);
-    
+
     messageElements.forEach((element, index) => {
       const isUser = element.matches(this.SELECTORS.userMessage) ||
-                    element.hasAttribute('data-role') && 
+                    element.hasAttribute('data-role') &&
                     element.getAttribute('data-role') === 'user';
-      
+
       const contentEl = element.querySelector(this.SELECTORS.messageText) ||
                        element.querySelector(this.SELECTORS.messageContent) ||
                        element;
-      
+
       const content = contentEl.textContent?.trim() || '';
       if (!content) return;
-      
+
       const timestamp = element.getAttribute('data-timestamp') ||
                        element.querySelector('time')?.getAttribute('datetime') ||
                        new Date().toISOString();
-      
+
       messages.push({
         role: isUser ? 'user' : 'assistant',
         content: content,
@@ -445,30 +445,30 @@ class ClaudeParser extends BaseParser {
         }
       });
     });
-    
+
     return messages;
   }
-  
+
   getConversationId(): string | null {
     return this.SELECTORS.conversationId();
   }
-  
+
   getModel(): string | null {
     // Claude model in settings or UI indicator
     const modelEl = document.querySelector('[data-model]');
     return modelEl?.getAttribute('data-model') || 'claude-3-opus';
   }
-  
+
   extractConversation(): Conversation | null {
     if (!this.detect()) return null;
-    
+
     const id = this.getConversationId();
     const title = this.extractTitle();
     const messages = this.extractMessages();
     const model = this.getModel();
-    
+
     if (!id || !messages.length) return null;
-    
+
     return {
       id: id,
       title: title || 'Untitled Conversation',
@@ -482,7 +482,7 @@ class ClaudeParser extends BaseParser {
       }
     };
   }
-  
+
   private extractConversationDate(): string | null {
     const dateEl = document.querySelector('[data-date], time');
     return dateEl?.getAttribute('datetime') || dateEl?.getAttribute('data-date') || null;
@@ -496,12 +496,12 @@ class ClaudeParser extends BaseParser {
 ```typescript
 class ParserRegistry {
   private parsers: Map<string, new () => BaseParser> = new Map();
-  
+
   register(parserClass: new () => BaseParser): void {
     const instance = new parserClass();
     this.parsers.set(instance.platformId, parserClass);
   }
-  
+
   detectParser(): BaseParser | null {
     for (const ParserClass of this.parsers.values()) {
       const parser = new ParserClass();
@@ -511,7 +511,7 @@ class ParserRegistry {
     }
     return null;
   }
-  
+
   getParser(platformId: string): BaseParser | null {
     const ParserClass = this.parsers.get(platformId);
     if (!ParserClass) return null;
@@ -577,17 +577,17 @@ class ConversationMonitor {
   private currentConversation: Conversation | null = null;
   private lastMessageCount: number = 0;
   private onChangeCallbacks: Array<(conv: Conversation) => void> = [];
-  
+
   startMonitoring(parser: BaseParser): void {
     this.parser = parser;
     this.lastMessageCount = 0;
-    
+
     parser.watchForChanges((conversation) => {
       this.currentConversation = conversation;
       this.onChangeCallbacks.forEach(cb => cb(conversation));
       this.updateUI(conversation);
     });
-    
+
     // Initial extraction
     const initial = parser.extractConversation();
     if (initial) {
@@ -595,21 +595,21 @@ class ConversationMonitor {
       this.lastMessageCount = initial.messages.length;
     }
   }
-  
+
   stopMonitoring(): void {
     if (this.parser) {
       this.parser.stopWatching();
     }
   }
-  
+
   onConversationChange(callback: (conv: Conversation) => void): void {
     this.onChangeCallbacks.push(callback);
   }
-  
+
   getCurrentConversation(): Conversation | null {
     return this.currentConversation;
   }
-  
+
   hasNewMessages(): boolean {
     if (!this.parser || !this.currentConversation) return false;
     return this.parser.hasNewMessages(this.lastMessageCount);
@@ -636,12 +636,12 @@ class ConversationMonitor {
 class CaptureButton {
   private button: HTMLButtonElement;
   private state: 'idle' | 'processing' | 'success' | 'error' = 'idle';
-  
+
   constructor() {
     this.button = this.createButton();
     this.injectButton();
   }
-  
+
   private createButton(): HTMLButtonElement {
     const button = document.createElement('button');
     button.id = 'sb-capture-btn';
@@ -650,36 +650,36 @@ class CaptureButton {
     button.addEventListener('click', () => this.handleClick());
     return button;
   }
-  
+
   private injectButton(): void {
     // Inject into page with Shadow DOM for style isolation
     const container = document.createElement('div');
     container.id = 'sb-extension-container';
     const shadow = container.attachShadow({ mode: 'closed' });
-    
+
     // Inject styles
     const style = document.createElement('style');
     style.textContent = this.getButtonStyles();
     shadow.appendChild(style);
     shadow.appendChild(this.button);
-    
+
     document.body.appendChild(container);
   }
-  
+
   private async handleClick(): Promise<void> {
     if (this.state === 'processing') return;
-    
+
     this.setState('processing');
-    
+
     try {
       const conversation = conversationMonitor.getCurrentConversation();
       if (!conversation) {
         throw new Error('No conversation found');
       }
-      
+
       await apiClient.importConversation(conversation);
       this.setState('success');
-      
+
       // Reset after 2 seconds
       setTimeout(() => this.setState('idle'), 2000);
     } catch (error) {
@@ -688,11 +688,11 @@ class CaptureButton {
       setTimeout(() => this.setState('idle'), 5000);
     }
   }
-  
+
   setState(state: 'idle' | 'processing' | 'success' | 'error'): void {
     this.state = state;
     this.button.className = `sb-capture-button sb-state-${state}`;
-    
+
     switch (state) {
       case 'processing':
         this.button.textContent = 'Capturing...';
@@ -726,7 +726,7 @@ class CaptureButton {
 ```typescript
 class SelectiveCaptureUI {
   private checkboxes: Map<number, HTMLInputElement> = new Map();
-  
+
   injectCheckboxes(messages: Message[]): void {
     messages.forEach((msg, index) => {
       const checkbox = this.createCheckbox(index, msg);
@@ -734,7 +734,7 @@ class SelectiveCaptureUI {
       this.checkboxes.set(index, checkbox);
     });
   }
-  
+
   private createCheckbox(index: number, message: Message): HTMLInputElement {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -743,7 +743,7 @@ class SelectiveCaptureUI {
     checkbox.dataset.messageIndex = index.toString();
     return checkbox;
   }
-  
+
   getSelectedIndices(): number[] {
     const selected: number[] = [];
     this.checkboxes.forEach((checkbox, index) => {
@@ -753,13 +753,13 @@ class SelectiveCaptureUI {
     });
     return selected;
   }
-  
+
   filterConversation(conversation: Conversation): Conversation {
     const selectedIndices = this.getSelectedIndices();
-    const filteredMessages = conversation.messages.filter((_, index) => 
+    const filteredMessages = conversation.messages.filter((_, index) =>
       selectedIndices.includes(index)
     );
-    
+
     return {
       ...conversation,
       messages: filteredMessages,
@@ -785,27 +785,27 @@ class SelectiveCaptureUI {
 class BatchCaptureManager {
   async captureMultiple(conversationIds: string[]): Promise<BatchResult> {
     const results: Array<{id: string; success: boolean; error?: string}> = [];
-    
+
     for (const id of conversationIds) {
       try {
         // Navigate to conversation (if needed)
         await this.navigateToConversation(id);
         await this.waitForLoad();
-        
+
         // Extract and capture
         const parser = parserRegistry.detectParser();
         if (!parser) continue;
-        
+
         const conversation = parser.extractConversation();
         if (!conversation) continue;
-        
+
         await apiClient.importConversation(conversation);
         results.push({ id, success: true });
       } catch (error) {
         results.push({ id, success: false, error: String(error) });
       }
     }
-    
+
     return {
       total: conversationIds.length,
       successful: results.filter(r => r.success).length,
@@ -841,15 +841,15 @@ class StatusTracker {
     const key = `capture_status_${status.conversationId}`;
     await chrome.storage.local.set({ [key]: status });
   }
-  
+
   async getStatus(conversationId: string): Promise<CaptureStatus | null> {
     const key = `capture_status_${conversationId}`;
     const result = await chrome.storage.local.get(key);
     return result[key] || null;
   }
-  
+
   async updateStatus(
-    conversationId: string, 
+    conversationId: string,
     updates: Partial<CaptureStatus>
   ): Promise<void> {
     const current = await this.getStatus(conversationId);
@@ -928,16 +928,16 @@ class StatusTracker {
 class ActionPreviewPanel {
   private panel: HTMLElement;
   private actionItems: ActionItem[] = [];
-  
+
   show(conversation: Conversation): void {
     // Extract action items
     this.actionItems = actionExtractor.extract(conversation);
-    
+
     // Create and show panel
     this.panel = this.createPanel();
     this.injectPanel();
   }
-  
+
   private createPanel(): HTMLElement {
     const panel = document.createElement('div');
     panel.className = 'sb-action-preview-panel';
@@ -962,7 +962,7 @@ class ActionPreviewPanel {
     `;
     return panel;
   }
-  
+
   getSelectedActions(): ActionItem[] {
     const checkboxes = this.panel.querySelectorAll('input[type="checkbox"]:checked');
     return Array.from(checkboxes).map(cb => {
@@ -986,23 +986,23 @@ class ActionPreviewPanel {
 class TodoSidebar {
   private sidebar: HTMLElement;
   private todos: Todo[] = [];
-  
+
   constructor() {
     this.sidebar = this.createSidebar();
     this.injectSidebar();
     this.loadTodos();
   }
-  
+
   addTodo(todo: Todo): void {
     this.todos.push(todo);
     this.saveTodos();
     this.render();
   }
-  
+
   private render(): void {
     const list = this.sidebar.querySelector('.sb-todo-list');
     if (!list) return;
-    
+
     list.innerHTML = this.todos.map(todo => `
       <div class="sb-todo-item" data-todo-id="${todo.id}">
         <input type="checkbox" ${todo.completed ? 'checked' : ''}>
@@ -1012,13 +1012,13 @@ class TodoSidebar {
       </div>
     `).join('');
   }
-  
+
   private async loadTodos(): Promise<void> {
     const result = await chrome.storage.local.get('todos');
     this.todos = result.todos || [];
     this.render();
   }
-  
+
   private async saveTodos(): Promise<void> {
     await chrome.storage.local.set({ todos: this.todos });
   }
@@ -1060,14 +1060,14 @@ class SettingsManager {
     const result = await chrome.storage.sync.get('settings');
     return result.settings || this.getDefaultSettings();
   }
-  
+
   async saveSettings(settings: Partial<ExtensionSettings>): Promise<void> {
     const current = await this.getSettings();
     await chrome.storage.sync.set({
       settings: { ...current, ...settings }
     });
   }
-  
+
   private getDefaultSettings(): ExtensionSettings {
     return {
       apiEndpoint: 'https://api.secondbrain.com',
@@ -1102,8 +1102,8 @@ class SettingsManager {
 ```typescript
 class NotificationManager {
   async showNotification(
-    title: string, 
-    message: string, 
+    title: string,
+    message: string,
     type: 'success' | 'error' | 'info' = 'info'
   ): Promise<void> {
     if (await this.shouldShowNotification(type)) {
@@ -1115,7 +1115,7 @@ class NotificationManager {
       });
     }
   }
-  
+
   private async shouldShowNotification(type: string): Promise<boolean> {
     const settings = await settingsManager.getSettings();
     return settings.notifications[`on${type.charAt(0).toUpperCase() + type.slice(1)}` as keyof typeof settings.notifications] || false;
@@ -1134,16 +1134,16 @@ class NotificationManager {
 class SecondBrainAPIClient {
   private baseUrl: string;
   private apiKey: string;
-  
+
   constructor(baseUrl: string, apiKey: string) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
     this.apiKey = apiKey;
   }
-  
+
   async importConversation(conversation: Conversation): Promise<ImportResponse> {
     const url = `${this.baseUrl}/api/v1/conversations/import`;
     const idempotencyKey = this.generateIdempotencyKey(conversation);
-    
+
     const requestBody: ConversationImportRequest = {
       data: {
         conversation_id: conversation.id,
@@ -1155,7 +1155,7 @@ class SecondBrainAPIClient {
         })),
         metadata: {
           model: conversation.metadata.model,
-          created_at: conversation.metadata.conversationDate || 
+          created_at: conversation.metadata.conversationDate ||
                      conversation.metadata.capturedAt,
           title: conversation.title
         }
@@ -1165,7 +1165,7 @@ class SecondBrainAPIClient {
         source_version: '1.0'
       }
     };
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -1175,24 +1175,24 @@ class SecondBrainAPIClient {
       },
       body: JSON.stringify(requestBody)
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new APIError(error.error.code, error.error.message, error.error.details);
     }
-    
+
     return await response.json();
   }
-  
+
   private generateIdempotencyKey(conversation: Conversation): string {
     // Generate UUID v4 for idempotency
     // Use conversation ID + platform as seed for consistency
     return crypto.randomUUID();
   }
-  
+
   async checkCaptureStatus(captureId: string): Promise<CaptureStatusResponse> {
     const url = `${this.baseUrl}/api/v1/capture/status/${captureId}`;
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -1200,11 +1200,11 @@ class SecondBrainAPIClient {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new APIError('NOT_FOUND', 'Capture not found');
     }
-    
+
     return await response.json();
   }
 }
@@ -1226,7 +1226,7 @@ class APIKeyManager {
     if (!this.isValidAPIKey(apiKey)) {
       throw new Error('Invalid API key format');
     }
-    
+
     // Test connection (optional)
     const client = new SecondBrainAPIClient(settings.apiEndpoint, apiKey);
     try {
@@ -1235,22 +1235,22 @@ class APIKeyManager {
     } catch (error) {
       throw new Error('API key validation failed');
     }
-    
+
     // Save to storage
     await chrome.storage.sync.set({ apiKey: apiKey });
     return true;
   }
-  
+
   async getAPIKey(): Promise<string | null> {
     const result = await chrome.storage.sync.get('apiKey');
     return result.apiKey || null;
   }
-  
+
   private isValidAPIKey(key: string): boolean {
     // Format: sb_live_... or sb_test_...
     return /^sb_(live|test)_[a-zA-Z0-9]{32,}$/.test(key);
   }
-  
+
   private async testConnection(client: SecondBrainAPIClient): Promise<void> {
     // Call health endpoint or verify endpoint
     // This is optional - can skip if no test endpoint exists
@@ -1360,13 +1360,13 @@ class RateLimitHandler {
   async handleRateLimit(error: APIError): Promise<void> {
     if (error.code === 'RATE_LIMIT_EXCEEDED') {
       const retryAfter = error.details?.retry_after || 60;
-      
+
       // Queue conversation for retry
       await queueManager.addToQueue(conversation, {
         retryAfter: Date.now() + (retryAfter * 1000),
         retryCount: 0
       });
-      
+
       // Show notification
       notificationManager.showNotification(
         'Rate Limit Exceeded',
@@ -1399,13 +1399,13 @@ interface QueuedConversation {
 class QueueManager {
   private readonly MAX_QUEUE_SIZE = 100;
   private readonly MAX_RETRIES = 5;
-  
+
   async addToQueue(
     conversation: Conversation,
     options?: { retryAfter?: number; priority?: 'high' | 'normal' | 'low' }
   ): Promise<void> {
     const queue = await this.getQueue();
-    
+
     // Check queue size
     if (queue.length >= this.MAX_QUEUE_SIZE) {
       // Remove oldest low-priority item
@@ -1416,7 +1416,7 @@ class QueueManager {
         throw new Error('Queue is full');
       }
     }
-    
+
     const queuedItem: QueuedConversation = {
       id: crypto.randomUUID(),
       conversation: conversation,
@@ -1425,20 +1425,20 @@ class QueueManager {
       retryAfter: options?.retryAfter,
       priority: options?.priority || 'normal'
     };
-    
+
     queue.push(queuedItem);
     await this.saveQueue(queue);
   }
-  
+
   async getQueue(): Promise<QueuedConversation[]> {
     const result = await chrome.storage.local.get('conversation_queue');
     return result.conversation_queue || [];
   }
-  
+
   async saveQueue(queue: QueuedConversation[]): Promise<void> {
     await chrome.storage.local.set({ conversation_queue: queue });
   }
-  
+
   async removeFromQueue(itemId: string): Promise<void> {
     const queue = await this.getQueue();
     const filtered = queue.filter(item => item.id !== itemId);
@@ -1453,7 +1453,7 @@ class QueueManager {
 ```typescript
 class SyncManager {
   private syncInterval: number | null = null;
-  
+
   startBackgroundSync(): void {
     // Sync every 30 seconds when online
     this.syncInterval = window.setInterval(() => {
@@ -1461,43 +1461,43 @@ class SyncManager {
         this.syncQueue();
       }
     }, 30000);
-    
+
     // Also sync on online event
     window.addEventListener('online', () => this.syncQueue());
   }
-  
+
   stopBackgroundSync(): void {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
   }
-  
+
   async syncQueue(): Promise<void> {
     const queue = await queueManager.getQueue();
     const apiClient = await this.getAPIClient();
-    
+
     if (!apiClient) return; // No API key configured
-    
+
     for (const item of queue) {
       // Check retry after
       if (item.retryAfter && Date.now() < item.retryAfter) {
         continue;
       }
-      
+
       // Check retry count
       if (item.retryCount >= 5) {
         // Move to failed queue
         await this.moveToFailedQueue(item);
         continue;
       }
-      
+
       try {
         await apiClient.importConversation(item.conversation);
-        
+
         // Success - remove from queue
         await queueManager.removeFromQueue(item.id);
-        
+
         // Update status
         await statusTracker.updateStatus(item.conversation.id, {
           status: 'sent'
@@ -1506,23 +1506,23 @@ class SyncManager {
         // Increment retry count
         item.retryCount++;
         item.lastError = String(error);
-        
+
         // Exponential backoff
         item.retryAfter = Date.now() + (Math.pow(2, item.retryCount) * 1000);
-        
+
         await queueManager.saveQueue(queue);
       }
     }
   }
-  
+
   private async getAPIClient(): Promise<SecondBrainAPIClient | null> {
     const settings = await settingsManager.getSettings();
     const apiKey = await apiKeyManager.getAPIKey();
-    
+
     if (!apiKey || !settings.apiEndpoint) {
       return null;
     }
-    
+
     return new SecondBrainAPIClient(settings.apiEndpoint, apiKey);
   }
 }
@@ -1542,7 +1542,7 @@ class ConflictResolver {
     const status = await statusTracker.getStatus(conversationId);
     return status?.status === 'completed' || status?.status === 'sent';
   }
-  
+
   async handleDuplicateResponse(
     conversationId: string,
     response: ImportResponse
@@ -1585,10 +1585,10 @@ class ActionExtractor {
       // Action verbs
       /\b(?:create|build|deploy|implement|write|refactor|add|fix)\s+([^\.!?]+)/gi
     ];
-    
+
     const actions: ActionItem[] = [];
     const seen = new Set<string>();
-    
+
     patterns.forEach(pattern => {
       const matches = text.matchAll(pattern);
       for (const match of matches) {
@@ -1603,10 +1603,10 @@ class ActionExtractor {
         }
       }
     });
-    
+
     return actions;
   }
-  
+
   private conversationToText(conversation: Conversation): string {
     return conversation.messages
       .map(msg => msg.content)
@@ -1630,10 +1630,10 @@ class ActionHighlighter {
     conversation.messages.forEach((msg, msgIndex) => {
       const elementId = msg.metadata?.elementId;
       if (!elementId) return;
-      
+
       const element = document.getElementById(elementId);
       if (!element) return;
-      
+
       actions.forEach(action => {
         if (msg.content.includes(action.task)) {
           this.highlightText(element, action.task);
@@ -1641,20 +1641,20 @@ class ActionHighlighter {
       });
     });
   }
-  
+
   private highlightText(element: HTMLElement, text: string): void {
     const walker = document.createTreeWalker(
       element,
       NodeFilter.SHOW_TEXT,
       null
     );
-    
+
     const textNodes: Text[] = [];
     let node;
     while (node = walker.nextNode()) {
       textNodes.push(node as Text);
     }
-    
+
     textNodes.forEach(textNode => {
       const content = textNode.textContent || '';
       if (content.includes(text)) {
@@ -1723,11 +1723,11 @@ class TodoManager {
       completed: false,
       createdAt: new Date().toISOString()
     }));
-    
+
     await this.saveTodos(todos);
     todoSidebar.addTodos(todos);
   }
-  
+
   async updateTodoStatus(
     todoId: string,
     status: 'pending' | 'captured' | 'processed',
@@ -1742,12 +1742,12 @@ class TodoManager {
       await this.saveTodos(todos);
     }
   }
-  
+
   async getTodos(): Promise<Todo[]> {
     const result = await chrome.storage.local.get('todos');
     return result.todos || [];
   }
-  
+
   async saveTodos(todos: Todo[]): Promise<void> {
     await chrome.storage.local.set({ todos: todos });
   }
@@ -1823,23 +1823,23 @@ class TodoFilter {
 ```html
 <div class="sb-settings-panel">
   <h2>Second Brain API Settings</h2>
-  
+
   <div class="sb-setting-item">
     <label for="api-endpoint">API Endpoint</label>
-    <input 
-      type="url" 
-      id="api-endpoint" 
+    <input
+      type="url"
+      id="api-endpoint"
       placeholder="https://api.secondbrain.com"
       value="https://api.secondbrain.com"
     >
     <small>Base URL for Second Brain API</small>
   </div>
-  
+
   <div class="sb-setting-item">
     <label for="api-key">API Key</label>
-    <input 
-      type="password" 
-      id="api-key" 
+    <input
+      type="password"
+      id="api-key"
       placeholder="sb_live_..."
     >
     <button id="test-connection">Test Connection</button>
@@ -1911,13 +1911,13 @@ describe('ChatGPTParser', () => {
     const parser = new ChatGPTParser();
     expect(parser.detect()).toBe(true);
   });
-  
+
   it('should extract conversation title', () => {
     document.body.innerHTML = '<input placeholder="Untitled" value="Test Title">';
     const parser = new ChatGPTParser();
     expect(parser.extractTitle()).toBe('Test Title');
   });
-  
+
   it('should extract messages', () => {
     // Mock DOM structure
     const parser = new ChatGPTParser();
@@ -1955,27 +1955,27 @@ describe('Capture Flow E2E', () => {
   it('should capture ChatGPT conversation', async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    
+
     // Load extension
     await page.goto('chrome-extension://.../popup.html');
-    
+
     // Configure API
     await page.type('#api-endpoint', 'http://localhost:8080');
     await page.type('#api-key', 'test-key');
     await page.click('#save-settings');
-    
+
     // Navigate to ChatGPT
     await page.goto('https://chat.openai.com');
-    
+
     // Wait for content script
     await page.waitForSelector('#sb-capture-btn');
-    
+
     // Click capture
     await page.click('#sb-capture-btn');
-    
+
     // Verify API call (mock server)
     // Verify success notification
-    
+
     await browser.close();
   });
 });
@@ -2110,4 +2110,3 @@ describe('Capture Flow E2E', () => {
 **Last Updated:** January 27, 2025  
 **Status:** AUTHORITATIVE SPECIFICATION  
 **Next Review:** When ChatGPT/Claude DOM structures change
-

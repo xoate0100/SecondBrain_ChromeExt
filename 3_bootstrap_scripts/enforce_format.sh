@@ -17,4 +17,3 @@ fi
 # re-add changes
 git add -A
 exit 0
-

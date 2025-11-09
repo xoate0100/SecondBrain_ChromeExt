@@ -18,7 +18,7 @@ You are the single authorized agent (Cursor Code). You may execute multi-step pl
   2. **Green**: Implement minimal code to pass test
   3. **Refactor**: Improve code while keeping tests green
   4. **Document**: Update documentation as needed
-- **Test File Patterns**: 
+- **Test File Patterns**:
   - Python: `*_test.py`, `test_*.py`, files in `tests/` directories
   - TypeScript/JavaScript: `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, files in `test/` directories
 - **Reference**: See `1_global_standards/TEST_STRATEGY_TDD.md` for detailed guidance.
@@ -57,4 +57,3 @@ You are the single authorized agent (Cursor Code). You may execute multi-step pl
 ## Failure Protocol
 - If a hook fails: attempt local corrective changes within current task.
 - If failure persists after two attempts: append an entry to `6_ai_runtime_context/ai_feedback_log.json` and stop.
-

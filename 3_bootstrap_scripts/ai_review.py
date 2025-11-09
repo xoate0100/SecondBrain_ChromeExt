@@ -15,4 +15,3 @@ issues=[]
 if "TODO" in diff or "FIXME" in diff:
     issues.append({"rule":"todos", "msg":"Remove TODO/FIXME before commit"})
 print(yaml.safe_dump({"summary": f"{len(issues)} issues", "violations": issues}))
-

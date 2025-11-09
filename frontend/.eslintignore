@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+*.config.js
+jest.setup.js
+jest.e2e.setup.js

@@ -1,164 +1,402 @@
-# MVP Specification Template (Full Schema Compliance)
+# MVP Specification for Second Brain Chrome Extension
 # This file defines the project structure and initial plan for AI-driven development
 # All fields match the full schema in 7_schemas/mvp_specification.schema.json
+# Based on CHROME_EXTENSION_MVP.md specification
 
 # Required Core Fields
-Project: "your-project-name"
+Project: "Second Brain Chrome Extension"
 Maturity: "L2.5"  # L2 | L2.5 | L3
-Architecture: "monorepo"  # Descriptive architecture type
-Repo_Type: "monorepo"  # frontend | backend | fullstack | microservice | monorepo
+Architecture: "Chrome Extension (Manifest V3) with modular parser architecture"
+Repo_Type: "frontend"  # frontend | backend | fullstack | microservice | monorepo
 Execution_Mode: "Controlled Agentic Execution"  # Human Directed | Controlled Agentic Execution | Fully Agentic
 
 # Goals and Principles
 GOALS_AND_PRINCIPLES:
   goals:
-    - "Initialize project structure from template"
-    - "Establish development standards and quality gates"
-    - "Enable AI-assisted development workflow"
+    - "Capture conversations from ChatGPT and Claude AI chat platforms"
+    - "Import conversations into Second Brain for processing and knowledge management"
+    - "Provide real-time conversation monitoring with one-click capture"
+    - "Enable client-side action item extraction preview"
+    - "Support offline queue management with automatic sync"
+    - "Maintain modular architecture for easy addition of new chat platforms"
   principles:
-    - "Test-driven development"
-    - "Code quality through automation"
-    - "Documentation as code"
+    - "Test-driven development (TDD) with 100% coverage for core modules"
+    - "SOLID design principles - functions ≤ 50 lines, interfaces ≤ 10 methods"
+    - "DRY, typed, modular code with explicit documentation"
+    - "Minimal dependencies - keep bundle size small"
+    - "TypeScript strict mode with ES2020+"
+    - "Vanilla JavaScript with Shadow DOM (no external UI frameworks)"
 
 # Technology Stack
 TECH_STACK:
   frontend:
-    framework: "react"  # nextjs | react | vue | svelte | angular | remix | astro | none
+    framework: "none"  # Chrome Extension - no web framework
     language: "typescript"
-    styling: []  # Optional: ["tailwindcss", "css-modules", etc.]
-    animations: ""  # Optional: "framer-motion", "gsap", etc.
-    validation: ""  # Optional: "zod", "yup", etc.
+    styling: []  # Custom CSS with Shadow DOM isolation
+    animations: ""  # CSS animations only
+    validation: ""  # TypeScript types for validation
   backend:
-    framework: "fastapi"  # fastapi | flask | django | express | spring | none
-    language: "python"
-    orm: ""  # Optional: "sqlalchemy", "django-orm", etc.
+    framework: "none"  # No backend - Chrome Extension only
+    language: ""
+    orm: ""
   shared:
-    language: "typescript"  # typescript | javascript | python
-  integrations: []  # Optional: ["stripe", "sendgrid", etc.]
-  optional_libs: []  # Optional: Additional libraries
+    language: "typescript"
+  integrations:
+    - "Second Brain API"
+    - "Chrome Extension APIs (storage, notifications, tabs)"
+  optional_libs:
+    - "uuid (for idempotency keys)"
+    - "date-fns (lightweight date formatting)"
 
-# Monorepo Layout (Nested Object Structure)
+# Monorepo Layout (Chrome Extension Structure)
 MONOREPO_LAYOUT:
   root:
-    frontend: {}
-    backend: {}
-    shared: {}
-  apps: {}  # Add app-specific directories here
+    files:
+      - "manifest.json"
+      - "package.json"
+      - "tsconfig.json"
+      - "webpack.config.js"
+      - "README.md"
+      - ".env.example"
+    frontend:
+      src:
+        background:
+          - "service-worker.ts"
+          - "api-client.ts"
+          - "queue-manager.ts"
+          - "sync-manager.ts"
+        content:
+          files:
+            - "content-script.ts"
+            - "ui-injector.ts"
+          parsers:
+            - "base-parser.ts"
+            - "chatgpt-parser.ts"
+            - "claude-parser.ts"
+            - "parser-registry.ts"
+        popup:
+          - "popup.html"
+          - "popup.ts"
+          - "settings.ts"
+        shared:
+          - "types.ts"
+          - "constants.ts"
+          - "utils.ts"
+          - "action-extractor.ts"
+        styles:
+          - "content.css"
+          - "popup.css"
+    tests:
+      unit:
+        - "parsers/"
+        - "api-client/"
+        - "action-extractor/"
+        - "queue-manager/"
+      integration:
+        - "parser-api-integration/"
+        - "queue-sync-integration/"
+      e2e:
+        - "capture-flow.spec.ts"
+        - "offline-queue.spec.ts"
+  apps: {}
   scripts:
     - "scripts/build.sh"
     - "scripts/test.sh"
+    - "scripts/lint.sh"
   shared:
-    types: {}
-    utils: {}
+    types:
+      - "conversation.ts"
+      - "message.ts"
+      - "action-item.ts"
+      - "todo.ts"
+    utils:
+      - "idempotency.ts"
+      - "date-utils.ts"
+      - "storage-utils.ts"
 
-# Environment and Configuration (Optional)
+# Environment and Configuration
 ENVIRONMENT_AND_CONFIG:
-  vercel_env: {}  # Optional: Vercel environment variables
-  env_notes: []  # Optional: Environment setup notes
+  vercel_env: {}  # Not applicable - Chrome Extension
+  env_notes:
+    - "API endpoint and API key configured in extension settings (chrome.storage.sync)"
+    - "Offline queue stored in chrome.storage.local"
+    - "No .env file needed - all config via extension UI"
 
-# Routing Model (Optional)
+# Routing Model (Not applicable for Chrome Extension)
 ROUTING_MODEL:
-  type: "path-based"  # path-based | domain-based | hybrid
-  base_path: ""  # Optional: Base routing path
-  data_source: ""  # Optional: Data source path
+  type: "path-based"
+  base_path: ""
+  data_source: ""
 
-# Schema Definition (Optional)
+# Schema Definition
 SCHEMA_DEFINITION:
-  validation_lib: ""  # Optional: "zod", "pydantic", etc.
-  schema_files: []  # Optional: ["schemas/user.schema.json"]
-  modules: []  # Optional: Schema module paths
+  validation_lib: "typescript"  # TypeScript interfaces for type safety
+  schema_files:
+    - "src/shared/types.ts"
+    - "src/shared/types/conversation.ts"
+    - "src/shared/types/message.ts"
+    - "src/shared/types/action-item.ts"
+    - "src/shared/types/todo.ts"
+  modules:
+    - "conversation"
+    - "message"
+    - "action-item"
+    - "todo"
+    - "capture-status"
+    - "api-request"
+    - "api-response"
 
-# Brand Module (Optional)
+# Brand Module
 BRAND_MODULE:
-  colors: {}  # Optional: Brand color definitions
-  fonts: {}  # Optional: Font definitions
-  cta_text: ""  # Optional: Call-to-action text
-  disclaimers: []  # Optional: Legal disclaimers
+  colors:
+    primary: "#4F46E5"
+    success: "#10B981"
+    error: "#EF4444"
+    hover: "#4338CA"
+  fonts:
+    heading: "Inter"
+    body: "Inter"
+  cta_text: "Capture to Second Brain"
+  disclaimers: []
 
-# Analytics and Events (Optional)
+# Analytics and Events
 ANALYTICS_AND_EVENTS:
-  provider: ""  # Optional: "google-analytics", "mixpanel", etc.
-  events: []  # Optional: Event names
-  pixels: []  # Optional: Tracking pixel IDs
+  provider: ""  # No analytics in MVP
+  events:
+    - "CAPTURE_CLICK"
+    - "CAPTURE_SUCCESS"
+    - "CAPTURE_ERROR"
+    - "ACTION_EXTRACTED"
+    - "QUEUE_SYNC"
+  pixels: []  # No tracking pixels in MVP
 
-# Integrations (Optional)
+# Integrations
 INTEGRATIONS:
-  oncehub: ""  # Optional: OnceHub integration
-  activecampaign: ""  # Optional: ActiveCampaign integration
-  optional_future: []  # Optional: Future integrations
+  oncehub: ""
+  activecampaign: ""
+  optional_future:
+    - "Second Brain API v2"
+    - "Additional chat platforms (Perplexity, Gemini)"
 
-# SEO and JSON-LD (Optional)
+# SEO and JSON-LD (Not applicable for Chrome Extension)
 SEO_AND_JSONLD:
-  meta_fields: []  # Optional: Meta field names
-  jsonld: []  # Optional: JSON-LD schema types
-  sitemap: {}  # Optional: Sitemap configuration
+  meta_fields: []
+  jsonld: []
+  sitemap: {}
 
-# AI UI Generation (Optional)
+# AI UI Generation
 AI_UI_GENERATION:
-  tool: ""  # Optional: AI UI tool name
-  prompt_library: ""  # Optional: Prompt library path
-  pattern: ""  # Optional: UI pattern description
+  tool: ""
+  prompt_library: ""
+  pattern: "Vanilla JavaScript with Shadow DOM for style isolation"
 
-# Automation Scripts (Optional)
-AUTOMATION_SCRIPTS: {}  # Optional: Script name -> command mapping
+# Automation Scripts
+AUTOMATION_SCRIPTS:
+  build: "webpack --mode production"
+  dev: "webpack --mode development --watch"
+  test: "jest"
+  test:watch: "jest --watch"
+  test:e2e: "jest --config jest.e2e.config.js"
+  lint: "eslint src/**/*.ts"
+  type-check: "tsc --noEmit"
 
-# Interactive Patterns (Optional)
-INTERACTIVE_PATTERNS: {}  # Optional: Pattern definitions
+# Interactive Patterns
+INTERACTIVE_PATTERNS:
+  capture_button:
+    states: ["idle", "processing", "success", "error"]
+    placement: "fixed top-right"
+    sticky: true
+  action_preview:
+    type: "modal"
+    editable: true
+  todo_sidebar:
+    collapsible: true
+    filterable: true
+    searchable: true
+  selective_capture:
+    checkboxes: true
+    select_all: true
 
-# QA Checklist (Optional)
-QA_CHECKLIST: []  # Optional: QA checklist items
+# QA Checklist
+QA_CHECKLIST:
+  - "Extension installs without errors"
+  - "API key configuration works"
+  - "ChatGPT conversation capture works"
+  - "Claude conversation capture works"
+  - "Action item extraction works"
+  - "Todo list displays correctly"
+  - "Offline queue works"
+  - "Background sync works"
+  - "Error handling works (invalid API key, network error, etc.)"
+  - "Settings persist across browser restarts"
+  - "No console errors"
+  - "No performance issues (memory leaks, etc.)"
+  - "100% test coverage for core parsers"
+  - "100% test coverage for API client"
+  - "100% test coverage for action extractor"
+  - "100% test coverage for queue manager"
+  - "E2E tests pass for all capture flows"
+  - "Browser compatibility (Chrome 88+, Edge 88+, Opera 74+)"
 
-# Deployment (Optional)
+# Deployment
 DEPLOYMENT:
-  provider: ""  # Optional: "vercel", "aws", "gcp", etc.
-  domain: ""  # Optional: Production domain
-  dns: ""  # Optional: DNS provider
-  preview: true  # Optional: Enable preview deployments
+  provider: "Chrome Web Store"
+  domain: ""
+  dns: ""
+  preview: true  # Enable preview/testing before store submission
 
-# Migration Path (Optional)
+# Migration Path
 MIGRATION_PATH:
-  future_subdomains: ""  # Optional: Future subdomain structure
-  automation: ""  # Optional: Migration automation description
+  future_subdomains: ""
+  automation: "Chrome Web Store auto-updates preserve settings and queue data"
 
-# First Run Playbook (Optional)
+# First Run Playbook
 FIRST_RUN_PLAYBOOK:
   steps:
-    - "Run: python3 3_bootstrap_scripts/cli.py init"
-    - "Customize MVP_SPECIFICATION.yaml with project details"
-    - "Review and adjust feature_flags.yml"
-    - "Start development with Cursor agent"
+    - "Run: npm install"
+    - "Configure TypeScript and Webpack"
+    - "Set up Jest and Puppeteer for testing"
+    - "Create manifest.json with V3 structure"
+    - "Implement base parser interface"
+    - "Implement parser registry"
+    - "Create API client skeleton"
+    - "Test extension in Chrome (load unpacked)"
+    - "Configure API endpoint and key in settings"
+    - "Test capture flow on ChatGPT/Claude"
 
-# Post-MVP Features (Optional)
-POST_MVP_FEATURES: []  # Optional: Features planned post-MVP
+# Post-MVP Features
+POST_MVP_FEATURES:
+  - "Additional chat platform parsers (Perplexity, Gemini, etc.)"
+  - "Full conversation editing within extension"
+  - "Direct note editing in Second Brain"
+  - "Multi-user collaboration"
+  - "Advanced action item extraction with AI"
+  - "Conversation search and filtering"
+  - "Export conversations to various formats"
+  - "Batch capture from conversation history"
+  - "Custom action item templates"
+  - "Integration with task management tools"
 
-# Day 1 Deliverables (Optional)
+# Day 1 Deliverables
 DELIVERABLES_DAY1:
   outputs:
-    - "Project structure initialized"
+    - "Chrome Extension project structure initialized"
+    - "Manifest V3 configuration"
+    - "TypeScript build pipeline (Webpack)"
+    - "Base parser interface and registry"
+    - "ChatGPT and Claude parsers implemented"
+    - "API client with Second Brain integration"
+    - "Capture button UI component"
+    - "Settings panel for API configuration"
+    - "Basic offline queue implementation"
+    - "Action item extraction (client-side)"
+    - "Todo list sidebar"
+    - "Test suite structure (unit, integration, E2E)"
     - "Pre-commit hooks installed"
     - "CI/CD workflows configured"
-    - "Development environment ready"
-  success_metric: "All initialization steps complete without errors"
+  success_metric: "Extension loads in Chrome, captures ChatGPT/Claude conversations, and successfully sends to Second Brain API"
 
 # Active Plan Template
 # This will be used to generate 6_ai_runtime_context/ACTIVE_PLAN.yaml
 ACTIVE_PLAN_TEMPLATE:
-  plan_id: "mvp-initial-setup"
-  component: "shared"  # frontend | backend | shared
-  goal: "Initialize project structure and basic setup"
+  plan_id: "chrome-extension-mvp-init"
+  component: "frontend"  # frontend | backend | shared
+  goal: "Initialize Chrome Extension MVP with modular parser architecture, API integration, and core capture features"
   tasks:
     - id: 1
-      name: "Set up frontend project structure"
-      outputs: ["frontend/package.json", "frontend/tsconfig.json"]
+      name: "Set up Chrome Extension project structure"
+      outputs:
+        - "manifest.json"
+        - "package.json"
+        - "tsconfig.json"
+        - "webpack.config.js"
+        - "src/ directory structure"
     - id: 2
-      name: "Set up backend project structure"
-      outputs: ["backend/requirements.txt", "backend/pyproject.toml"]
+      name: "Implement base parser interface and registry"
+      outputs:
+        - "src/content/parsers/base-parser.ts"
+        - "src/content/parsers/parser-registry.ts"
+        - "src/shared/types/conversation.ts"
+        - "src/shared/types/message.ts"
     - id: 3
-      name: "Configure shared types and utilities"
-      outputs: ["shared/src/types/", "shared/src/utils/"]
+      name: "Implement ChatGPT parser"
+      outputs:
+        - "src/content/parsers/chatgpt-parser.ts"
+        - "tests/unit/parsers/chatgpt-parser.test.ts"
     - id: 4
-      name: "Initialize development environment"
-      outputs: [".env.example", "docker-compose.yml"]
+      name: "Implement Claude parser"
+      outputs:
+        - "src/content/parsers/claude-parser.ts"
+        - "tests/unit/parsers/claude-parser.test.ts"
+    - id: 5
+      name: "Create Second Brain API client"
+      outputs:
+        - "src/background/api-client.ts"
+        - "src/shared/types/api-request.ts"
+        - "src/shared/types/api-response.ts"
+        - "tests/unit/api-client/api-client.test.ts"
+    - id: 6
+      name: "Implement content script and UI injection"
+      outputs:
+        - "src/content/content-script.ts"
+        - "src/content/ui-injector.ts"
+        - "src/styles/content.css"
+    - id: 7
+      name: "Implement capture button component"
+      outputs:
+        - "src/content/ui-injector.ts (capture button)"
+        - "src/styles/content.css (button styles)"
+    - id: 8
+      name: "Implement action item extraction"
+      outputs:
+        - "src/shared/action-extractor.ts"
+        - "src/shared/types/action-item.ts"
+        - "tests/unit/action-extractor/action-extractor.test.ts"
+    - id: 9
+      name: "Implement offline queue manager"
+      outputs:
+        - "src/background/queue-manager.ts"
+        - "src/shared/types/queued-conversation.ts"
+        - "tests/unit/queue-manager/queue-manager.test.ts"
+    - id: 10
+      name: "Implement background sync manager"
+      outputs:
+        - "src/background/sync-manager.ts"
+        - "src/background/service-worker.ts"
+        - "tests/integration/queue-sync-integration/queue-sync.test.ts"
+    - id: 11
+      name: "Implement todo/task tracking"
+      outputs:
+        - "src/shared/types/todo.ts"
+        - "src/popup/todo-sidebar.ts"
+        - "src/styles/popup.css"
+    - id: 12
+      name: "Create popup UI and settings panel"
+      outputs:
+        - "src/popup/popup.html"
+        - "src/popup/popup.ts"
+        - "src/popup/settings.ts"
+        - "src/styles/popup.css"
+    - id: 13
+      name: "Set up testing infrastructure"
+      outputs:
+        - "jest.config.js"
+        - "jest.e2e.config.js"
+        - "tests/ directory structure"
+        - "tests/e2e/capture-flow.spec.ts"
+    - id: 14
+      name: "Configure build and development scripts"
+      outputs:
+        - "package.json (scripts)"
+        - "scripts/build.sh"
+        - "scripts/test.sh"
+        - "scripts/lint.sh"
+    - id: 15
+      name: "Write E2E tests for core capture flows"
+      outputs:
+        - "tests/e2e/capture-flow.spec.ts"
+        - "tests/e2e/offline-queue.spec.ts"
+        - "tests/e2e/action-extraction.spec.ts"
   status: "active"
   auto_commit: true
   commit_frequency: checkpoint_based  # per_task | per_phase | checkpoint_based | manual
@@ -168,7 +406,7 @@ ACTIVE_PLAN_TEMPLATE:
     after_file_threshold: 10  # Commit when N files changed since last commit
     force_commit_on_checkpoint: true  # Override auto_commit: false when checkpoint threshold is met
 
-# Feature Flags Reference (Optional)
+# Feature Flags Reference
 FEATURE_FLAGS_REFERENCE:
   cursor_agent_mode: "sandboxed"
   agentic_write_ops: true
@@ -177,10 +415,16 @@ FEATURE_FLAGS_REFERENCE:
 # Summary for Initializer
 SUMMARY_FOR_INITIALIZER:
   intent:
-    - "Initialize project from template"
-    - "Validate all configuration files"
-    - "Scaffold directory structure"
-    - "Set up development environment"
+    - "Initialize Chrome Extension project structure with Manifest V3"
+    - "Set up TypeScript build pipeline with Webpack"
+    - "Create modular parser architecture (base parser, ChatGPT parser, Claude parser)"
+    - "Implement Second Brain API client with authentication and error handling"
+    - "Build content script with UI injection (capture button, todo sidebar)"
+    - "Implement offline queue and background sync for reliable data capture"
+    - "Create action item extraction with client-side preview"
+    - "Set up comprehensive test suite (unit, integration, E2E)"
+    - "Configure development and build scripts"
+    - "Validate all configuration files against schema"
     - "Generate active plan from template"
     - "Install pre-commit hooks"
-    - "Enable AI-assisted development workflow"
+    - "Enable AI-assisted development workflow with TDD and SOLID principles"

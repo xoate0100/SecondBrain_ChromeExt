@@ -834,13 +834,13 @@ async function captureConversation(conversationData) {
       }
     })
   });
-  
+
   if (!response.ok) {
     // Queue for retry
     await queueForRetry(conversationData);
     return;
   }
-  
+
   return await response.json();
 }
 ```
@@ -872,13 +872,13 @@ def handle_capture_intent(intent, session):
     """Handle Alexa capture intent"""
     api_key = os.environ['SECOND_BRAIN_API_KEY']
     api_url = os.environ['SECOND_BRAIN_API_URL']
-    
+
     # Extract slot values
     title = intent['slots']['title']['value']
     content = intent['slots']['content']['value']
     is_startable = intent['slots']['is_startable']['value'] == 'yes'
     effort_min = intent['slots']['effort_min']['value'] or 15
-    
+
     # Call Second Brain API
     response = requests.post(
         f'{api_url}/api/v1/capture',
@@ -899,7 +899,7 @@ def handle_capture_intent(intent, session):
             }
         }
     )
-    
+
     if response.status_code == 201:
         return "Note captured successfully"
     else:
@@ -945,12 +945,12 @@ class GoogleDriveSyncService:
     def __init__(self, api_client: GoogleAPIClient):
         self.api_client = api_client
         self.second_brain_api = SecondBrainAPIClient()
-    
+
     async def sync_file(self, file_id: str, account_email: str):
         """Sync file from Google Drive to Second Brain"""
         # Fetch file from Drive
         file_data = await self.api_client.get_file(file_id, account_email)
-        
+
         # Import to Second Brain
         response = await self.second_brain_api.import_file(
             file_id=file_id,
@@ -964,7 +964,7 @@ class GoogleDriveSyncService:
                 'modified_time': file_data['modifiedTime']
             }
         )
-        
+
         return response
 ```
 
@@ -1055,13 +1055,13 @@ class CaptureRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=1_000_000)
     source: str = Field(..., regex="^(alexa|chrome-extension|ios|email|manual|other)$")
     metadata: Optional[CaptureMetadata] = None
-    
+
     @validator('title')
     def validate_title(cls, v):
         if not v.strip():
             raise ValueError('Title cannot be empty')
         return v.strip()
-    
+
     class Config:
         schema_extra = {
             "example": {
@@ -1132,7 +1132,7 @@ async def api_exception_handler(request, exc):
     elif isinstance(exc, AuthenticationError):
         status_code = 401
     # ... etc
-    
+
     return JSONResponse(
         status_code=status_code,
         content={
@@ -1463,7 +1463,7 @@ async def test_capture_to_note_pipeline():
     # Setup
     client = TestClient(app)
     api_key = create_test_api_key()
-    
+
     # Capture
     capture_response = client.post(
         "/api/v1/capture",
@@ -1478,10 +1478,10 @@ async def test_capture_to_note_pipeline():
     )
     assert capture_response.status_code == 201
     capture_id = capture_response.json()["data"]["capture_id"]
-    
+
     # Wait for processing
     await asyncio.sleep(2)
-    
+
     # Check status
     status_response = client.get(
         f"/api/v1/capture/status/{capture_id}",
@@ -1521,7 +1521,7 @@ def test_webhook_delivery():
         json={"received": True},
         status=200
     )
-    
+
     # Test webhook delivery
     result = deliver_webhook(webhook_url, event_data)
     assert result.success is True
@@ -1734,11 +1734,11 @@ async function captureConversation(conversation) {
         }
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Capture failed:', error);
@@ -1757,10 +1757,10 @@ import requests
 def handle_capture(intent, session):
     api_key = os.environ['SECOND_BRAIN_API_KEY']
     api_url = os.environ['SECOND_BRAIN_API_URL']
-    
+
     title = intent['slots']['title']['value']
     content = intent['slots']['content']['value']
-    
+
     response = requests.post(
         f'{api_url}/api/v1/capture',
         headers={
@@ -1776,7 +1776,7 @@ def handle_capture(intent, session):
         },
         timeout=10
     )
-    
+
     if response.status_code == 201:
         return "Note captured successfully"
     else:
@@ -1834,4 +1834,3 @@ X-Request-ID: <uuid>
 **Last Updated:** January 27, 2025  
 **Status:** AUTHORITATIVE  
 **Next Review:** April 27, 2025
-
