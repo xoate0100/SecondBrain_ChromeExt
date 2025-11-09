@@ -1,0 +1,95 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-xml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+
+  - repo: local
+    hooks:
+      - id: syntax-checks
+        name: Syntax & Structural Validation
+        entry: 3_bootstrap_scripts/validate_syntax.sh
+        language: system
+        pass_filenames: true
+        always_run: true
+
+      - id: format-style
+        name: Style Enforcement
+        entry: 3_bootstrap_scripts/enforce_format.sh
+        language: system
+        pass_filenames: true
+
+      - id: static-analysis
+        name: Type & Static Analysis
+        entry: 3_bootstrap_scripts/static_analysis.sh
+        language: system
+
+      - id: security-scan
+        name: Security & Secrets
+        entry: 3_bootstrap_scripts/security_scan.sh
+        language: system
+
+      - id: architecture-check
+        name: Architecture & SOLID Enforcement
+        entry: python3 3_bootstrap_scripts/architecture_check.py
+        language: system
+
+      - id: ai-behavior-validation
+        name: AI Behavior Containment
+        entry: python3 3_bootstrap_scripts/ai_behavior_validation.py
+        language: system
+
+      - id: guardrail-enforcement
+        name: Guardrail Enforcement
+        entry: python3 3_bootstrap_scripts/guardrail_enforcement.py
+        language: system
+        pass_filenames: false
+
+      - id: gate-enforcement
+        name: Gate Enforcement
+        entry: python3 3_bootstrap_scripts/gate_enforcement.py
+        language: system
+        pass_filenames: false
+
+      - id: tests-and-coverage
+        name: Tests & Coverage
+        entry: 3_bootstrap_scripts/tests_coverage.sh
+        language: system
+
+      - id: documentation-sync
+        name: Documentation Sync
+        entry: python3 3_bootstrap_scripts/docs_sync.py
+        language: system
+
+      - id: complexity-duplication
+        name: Complexity & Duplication
+        entry: python3 3_bootstrap_scripts/complexity_check.py
+        language: system
+
+      - id: performance-scan
+        name: Performance Scan
+        entry: 3_bootstrap_scripts/performance_scan.sh
+        language: system
+
+      - id: commit-message-validator
+        name: Commit Message Validator
+        entry: 3_bootstrap_scripts/commit_validator.sh
+        language: system
+
+      - id: large-changeset-warning
+        name: Large Changeset Warning
+        entry: python3 3_bootstrap_scripts/check_large_changeset.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        verbose: true

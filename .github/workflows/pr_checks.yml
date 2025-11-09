@@ -1,0 +1,19 @@
+name: PR Checks
+on: [pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -V || sudo apt-get update && sudo apt-get install -y python3 python3-pip
+      - run: pip3 install pre-commit
+      - run: pre-commit run --all-files || true   # produce diagnostics; rely on blocking hooks locally
+      - run: python3 3_bootstrap_scripts/schema_enforcement.py
+      - run: python3 3_bootstrap_scripts/architecture_check.py
+      - run: python3 3_bootstrap_scripts/traceability_graph.py
+      - run: python3 3_bootstrap_scripts/ai_review.py > ai_reports/last_review.yaml || true
+      - run: bash 3_bootstrap_scripts/performance_scan.sh || true
+      - run: bash 3_bootstrap_scripts/runtime_security_check.sh || true
+      - uses: actions/upload-artifact@v4
+        with: { name: ai-reports, path: ai_reports }
+

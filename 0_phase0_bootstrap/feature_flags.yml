@@ -1,0 +1,67 @@
+mode:
+  # L2.5 Single-Agent Sandbox: Cursor agent may execute multi-step plans end-to-end
+  cursor_agent_mode: sandboxed
+  agentic_write_ops: true          # allow code/tests/docs/scripts writes
+  modify_meta_framework: false     # forbid edits to meta/standards/ci
+  human_review_required_for_merge: true
+
+permissions:
+  write_to:
+    - frontend/
+    - backend/
+    - shared/
+  readonly:
+    - 0_phase0_bootstrap/
+    - 1_global_standards/
+    - 7_schemas/
+    - .github/
+    - 8_ci/
+    - 4_docs_index/
+    - 5_reference_architectures/
+
+components:
+  frontend:
+    language: typescript
+    package_manager: auto        # auto | npm | yarn | pnpm
+    coverage_threshold: 95
+    complexity_limit: 12
+    directories: [frontend/]
+  backend:
+    language: python
+    coverage_threshold: 100
+    complexity_limit: 10
+    directories: [backend/]
+  shared:
+    language: generic
+    coverage_threshold: 90
+    complexity_limit: 10
+    directories: [shared/]
+
+gates:
+  block_on_security_critical: true
+  block_on_schema_violation: true
+  block_on_coverage_drop: true
+  warn_on_performance_regression: true
+  warn_on_mutation_drop: true
+
+thresholds:
+  mutation_kill: 75
+  perf_regression_pct: 10
+  max_duplication_pct: 10
+  max_function_complexity: 10
+  line_length: 100
+
+ai_guardrails:
+  enforce_task_scope: true
+  forbid_folder_creation_outside_scope: true
+  enforce_tdd_cycle: true  # BLOCKING: Commits blocked if code modified without tests
+  enforce_solid_principles: true  # BLOCKING: Commits blocked on SOLID violations (SRP, ISP, DIP)
+  require_doc_sync: true
+  require_commit_plan_tags: true
+
+# Metadata (optional but recommended)
+meta:
+  schema_version: "1.0.0"
+  last_updated: "2024-01-01T00:00:00Z"
+  author: "Project Team"
+

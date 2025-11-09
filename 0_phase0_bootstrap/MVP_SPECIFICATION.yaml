@@ -1,0 +1,186 @@
+# MVP Specification Template (Full Schema Compliance)
+# This file defines the project structure and initial plan for AI-driven development
+# All fields match the full schema in 7_schemas/mvp_specification.schema.json
+
+# Required Core Fields
+Project: "your-project-name"
+Maturity: "L2.5"  # L2 | L2.5 | L3
+Architecture: "monorepo"  # Descriptive architecture type
+Repo_Type: "monorepo"  # frontend | backend | fullstack | microservice | monorepo
+Execution_Mode: "Controlled Agentic Execution"  # Human Directed | Controlled Agentic Execution | Fully Agentic
+
+# Goals and Principles
+GOALS_AND_PRINCIPLES:
+  goals:
+    - "Initialize project structure from template"
+    - "Establish development standards and quality gates"
+    - "Enable AI-assisted development workflow"
+  principles:
+    - "Test-driven development"
+    - "Code quality through automation"
+    - "Documentation as code"
+
+# Technology Stack
+TECH_STACK:
+  frontend:
+    framework: "react"  # nextjs | react | vue | svelte | angular | remix | astro | none
+    language: "typescript"
+    styling: []  # Optional: ["tailwindcss", "css-modules", etc.]
+    animations: ""  # Optional: "framer-motion", "gsap", etc.
+    validation: ""  # Optional: "zod", "yup", etc.
+  backend:
+    framework: "fastapi"  # fastapi | flask | django | express | spring | none
+    language: "python"
+    orm: ""  # Optional: "sqlalchemy", "django-orm", etc.
+  shared:
+    language: "typescript"  # typescript | javascript | python
+  integrations: []  # Optional: ["stripe", "sendgrid", etc.]
+  optional_libs: []  # Optional: Additional libraries
+
+# Monorepo Layout (Nested Object Structure)
+MONOREPO_LAYOUT:
+  root:
+    frontend: {}
+    backend: {}
+    shared: {}
+  apps: {}  # Add app-specific directories here
+  scripts:
+    - "scripts/build.sh"
+    - "scripts/test.sh"
+  shared:
+    types: {}
+    utils: {}
+
+# Environment and Configuration (Optional)
+ENVIRONMENT_AND_CONFIG:
+  vercel_env: {}  # Optional: Vercel environment variables
+  env_notes: []  # Optional: Environment setup notes
+
+# Routing Model (Optional)
+ROUTING_MODEL:
+  type: "path-based"  # path-based | domain-based | hybrid
+  base_path: ""  # Optional: Base routing path
+  data_source: ""  # Optional: Data source path
+
+# Schema Definition (Optional)
+SCHEMA_DEFINITION:
+  validation_lib: ""  # Optional: "zod", "pydantic", etc.
+  schema_files: []  # Optional: ["schemas/user.schema.json"]
+  modules: []  # Optional: Schema module paths
+
+# Brand Module (Optional)
+BRAND_MODULE:
+  colors: {}  # Optional: Brand color definitions
+  fonts: {}  # Optional: Font definitions
+  cta_text: ""  # Optional: Call-to-action text
+  disclaimers: []  # Optional: Legal disclaimers
+
+# Analytics and Events (Optional)
+ANALYTICS_AND_EVENTS:
+  provider: ""  # Optional: "google-analytics", "mixpanel", etc.
+  events: []  # Optional: Event names
+  pixels: []  # Optional: Tracking pixel IDs
+
+# Integrations (Optional)
+INTEGRATIONS:
+  oncehub: ""  # Optional: OnceHub integration
+  activecampaign: ""  # Optional: ActiveCampaign integration
+  optional_future: []  # Optional: Future integrations
+
+# SEO and JSON-LD (Optional)
+SEO_AND_JSONLD:
+  meta_fields: []  # Optional: Meta field names
+  jsonld: []  # Optional: JSON-LD schema types
+  sitemap: {}  # Optional: Sitemap configuration
+
+# AI UI Generation (Optional)
+AI_UI_GENERATION:
+  tool: ""  # Optional: AI UI tool name
+  prompt_library: ""  # Optional: Prompt library path
+  pattern: ""  # Optional: UI pattern description
+
+# Automation Scripts (Optional)
+AUTOMATION_SCRIPTS: {}  # Optional: Script name -> command mapping
+
+# Interactive Patterns (Optional)
+INTERACTIVE_PATTERNS: {}  # Optional: Pattern definitions
+
+# QA Checklist (Optional)
+QA_CHECKLIST: []  # Optional: QA checklist items
+
+# Deployment (Optional)
+DEPLOYMENT:
+  provider: ""  # Optional: "vercel", "aws", "gcp", etc.
+  domain: ""  # Optional: Production domain
+  dns: ""  # Optional: DNS provider
+  preview: true  # Optional: Enable preview deployments
+
+# Migration Path (Optional)
+MIGRATION_PATH:
+  future_subdomains: ""  # Optional: Future subdomain structure
+  automation: ""  # Optional: Migration automation description
+
+# First Run Playbook (Optional)
+FIRST_RUN_PLAYBOOK:
+  steps:
+    - "Run: python3 3_bootstrap_scripts/cli.py init"
+    - "Customize MVP_SPECIFICATION.yaml with project details"
+    - "Review and adjust feature_flags.yml"
+    - "Start development with Cursor agent"
+
+# Post-MVP Features (Optional)
+POST_MVP_FEATURES: []  # Optional: Features planned post-MVP
+
+# Day 1 Deliverables (Optional)
+DELIVERABLES_DAY1:
+  outputs:
+    - "Project structure initialized"
+    - "Pre-commit hooks installed"
+    - "CI/CD workflows configured"
+    - "Development environment ready"
+  success_metric: "All initialization steps complete without errors"
+
+# Active Plan Template
+# This will be used to generate 6_ai_runtime_context/ACTIVE_PLAN.yaml
+ACTIVE_PLAN_TEMPLATE:
+  plan_id: "mvp-initial-setup"
+  component: "shared"  # frontend | backend | shared
+  goal: "Initialize project structure and basic setup"
+  tasks:
+    - id: 1
+      name: "Set up frontend project structure"
+      outputs: ["frontend/package.json", "frontend/tsconfig.json"]
+    - id: 2
+      name: "Set up backend project structure"
+      outputs: ["backend/requirements.txt", "backend/pyproject.toml"]
+    - id: 3
+      name: "Configure shared types and utilities"
+      outputs: ["shared/src/types/", "shared/src/utils/"]
+    - id: 4
+      name: "Initialize development environment"
+      outputs: [".env.example", "docker-compose.yml"]
+  status: "active"
+  auto_commit: true
+  commit_frequency: checkpoint_based  # per_task | per_phase | checkpoint_based | manual
+  commit_checkpoints:
+    after_phases: true  # Commit after completing each phase (logical task group)
+    after_task_count: 5  # Commit after N tasks complete (default: 3-5)
+    after_file_threshold: 10  # Commit when N files changed since last commit
+    force_commit_on_checkpoint: true  # Override auto_commit: false when checkpoint threshold is met
+
+# Feature Flags Reference (Optional)
+FEATURE_FLAGS_REFERENCE:
+  cursor_agent_mode: "sandboxed"
+  agentic_write_ops: true
+  modify_meta_framework: false
+
+# Summary for Initializer
+SUMMARY_FOR_INITIALIZER:
+  intent:
+    - "Initialize project from template"
+    - "Validate all configuration files"
+    - "Scaffold directory structure"
+    - "Set up development environment"
+    - "Generate active plan from template"
+    - "Install pre-commit hooks"
+    - "Enable AI-assisted development workflow"

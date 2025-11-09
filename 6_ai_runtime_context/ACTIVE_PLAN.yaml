@@ -1,0 +1,12 @@
+plan_id: "template-initialization"
+component: "shared"
+goal: "Initialize project from this template"
+tasks:
+  - id: 1
+    name: "Set up project structure"
+    outputs: ["frontend/", "backend/", "shared/"]
+  - id: 2
+    name: "Configure component-specific settings"
+    outputs: []
+status: paused
+auto_commit: false
