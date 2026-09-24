@@ -13,19 +13,19 @@ try:
         flags = yaml.safe_load(f)
     components = flags.get("components", {})
     gates = flags.get("gates", {})
-    
+
     # Backend threshold
     backend_threshold = components.get("backend", {}).get("coverage_threshold", 100)
     print(f"BACKEND_THRESHOLD={backend_threshold}")
-    
+
     # Frontend threshold
     frontend_threshold = components.get("frontend", {}).get("coverage_threshold", 95)
     print(f"FRONTEND_THRESHOLD={frontend_threshold}")
-    
+
     # Shared threshold
     shared_threshold = components.get("shared", {}).get("coverage_threshold", 90)
     print(f"SHARED_THRESHOLD={shared_threshold}")
-    
+
     # Block on coverage drop
     BLOCK_ON_COVERAGE = gates.get("block_on_coverage_drop", true)
     print(f"BLOCK_ON_COVERAGE={str(BLOCK_ON_COVERAGE).lower()}")
@@ -74,4 +74,3 @@ if [ -f "frontend/package.json" ]; then
 fi
 
 exit $STATUS
-

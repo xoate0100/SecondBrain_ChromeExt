@@ -7,4 +7,3 @@ plan:<plan_id> component:<component> task:<id>
 - Docs updated?
 
 Resolves #<issue>
-

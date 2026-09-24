@@ -46,7 +46,7 @@ commit_checkpoints:
 ### Relationship to `auto_commit`
 
 - If `auto_commit: true`: Normal commits happen automatically
-- If `auto_commit: false`: 
+- If `auto_commit: false`:
   - If `force_commit_on_checkpoint: true`: Checkpoints override `auto_commit` and force commits
   - If `force_commit_on_checkpoint: false`: Checkpoints are ignored, no automatic commits
 
@@ -162,4 +162,3 @@ If `auto_commit: false` but you want commits:
 - **AI Sandbox Rules**: `0_phase0_bootstrap/AI_SANDBOX_RULES.md`
 - **TDD Guide**: `1_global_standards/TEST_STRATEGY_TDD.md`
 - **SOLID Principles**: `1_global_standards/SOLID_PRINCIPLES.md`
-

@@ -17,4 +17,3 @@ jobs:
       - run: bash 3_bootstrap_scripts/runtime_security_check.sh
       - uses: actions/upload-artifact@v4
         with: { name: ai-reports, path: ai_reports }
-

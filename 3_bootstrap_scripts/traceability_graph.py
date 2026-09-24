@@ -10,4 +10,3 @@ for line in logs.splitlines():
 pathlib.Path("ai_reports").mkdir(exist_ok=True)
 pathlib.Path("ai_reports/traceability.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 print("[traceability] generated ai_reports/traceability.json")
-

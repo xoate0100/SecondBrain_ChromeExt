@@ -4,4 +4,3 @@
     {"label": "pre-commit:install", "type": "shell", "command": "pre-commit install"}
   ]
 }
-

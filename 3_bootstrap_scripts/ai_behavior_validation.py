@@ -32,4 +32,3 @@ if viol:
     sys.exit(1)
 
 print("[ai-guard] OK")
-
