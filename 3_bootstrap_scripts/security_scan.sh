@@ -11,4 +11,3 @@ if [ -f "frontend/package.json" ]; then
   (cd frontend && npm audit --audit-level=high || true)
 fi
 exit $STATUS
-

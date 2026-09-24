@@ -10,4 +10,3 @@ if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
   (cd frontend && npm ci --silent && npm run -s typecheck || npm run -s build --if-present) || STATUS=1
 fi
 exit $STATUS
-

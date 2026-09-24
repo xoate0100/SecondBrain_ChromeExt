@@ -19,14 +19,14 @@ def get_uncommitted_file_count():
             text=True
         ).strip().splitlines()
         modified = [f for f in modified if f.strip()]
-        
+
         # Get untracked files
         untracked = subprocess.check_output(
             ["git", "ls-files", "--others", "--exclude-standard"],
             text=True
         ).strip().splitlines()
         untracked = [f for f in untracked if f.strip()]
-        
+
         total = len(modified) + len(untracked)
         return total, modified, untracked
     except subprocess.CalledProcessError:
@@ -41,14 +41,14 @@ def get_files_since_last_commit():
             text=True
         ).strip().splitlines()
         files = [f for f in files if f.strip()]
-        
+
         # Get untracked files
         untracked = subprocess.check_output(
             ["git", "ls-files", "--others", "--exclude-standard"],
             text=True
         ).strip().splitlines()
         untracked = [f for f in untracked if f.strip()]
-        
+
         total = len(files) + len(untracked)
         return total, files, untracked
     except subprocess.CalledProcessError:
@@ -58,7 +58,7 @@ def get_files_since_last_commit():
 def main():
     """Check for large changeset and warn if threshold exceeded"""
     count, modified, untracked = get_files_since_last_commit()
-    
+
     if count > WARN_THRESHOLD:
         print(f"[large-changeset] ⚠️  WARNING: {count} files changed since last commit (threshold: {WARN_THRESHOLD})")
         print(f"[large-changeset] Consider committing incrementally to avoid large uncommitted changesets.")
@@ -68,10 +68,9 @@ def main():
         print(f"[large-changeset] Reference: See docs/COMMIT_STRATEGY.md for commit frequency best practices")
         # Non-blocking - exit with success
         sys.exit(0)
-    
+
     # All good
     sys.exit(0)
 
 if __name__ == "__main__":
     main()
-

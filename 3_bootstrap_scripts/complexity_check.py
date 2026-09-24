@@ -23,7 +23,7 @@ def load_complexity_limits():
             "frontend": 12,
             "shared": 10
         }
-    
+
     try:
         flags = yaml.safe_load(open(flags_path))
         components = flags.get("components", {})
@@ -56,37 +56,36 @@ def check_complexity():
     """Check complexity against component limits"""
     limits = load_complexity_limits()
     violations = []
-    
+
     for component in ("backend", "frontend", "shared"):
         rp = pathlib.Path(component)
         if not rp.exists():
             continue
-        
+
         limit = limits.get(component, 10)
-        
+
         for p in rp.rglob("*.*"):
             if p.suffix not in (".py", ".ts", ".tsx", ".js", ".jsx"):
                 continue
-            
+
             try:
                 content = p.read_text(encoding="utf-8", errors="ignore")
             except:
                 continue
-            
+
             complexity = calculate_complexity(content)
             if complexity > limit:
                 violations.append(
                     f"{p}: complexity {complexity} exceeds limit {limit} for {component}"
                 )
-    
+
     if violations:
         print("[complexity] Findings:")
         print("\n".join(f"- {v}" for v in violations))
         sys.exit(1)
-    
+
     print("[complexity] OK")
 
 
 if __name__ == "__main__":
     check_complexity()
-

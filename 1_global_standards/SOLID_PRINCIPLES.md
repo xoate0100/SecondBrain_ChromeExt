@@ -247,4 +247,3 @@ SOLID principles are **MANDATORY** and will **BLOCK** commits if violated. The a
 - **DIP**: Must depend on abstractions, not concrete implementations
 
 Violations must be fixed before code can be committed.
-

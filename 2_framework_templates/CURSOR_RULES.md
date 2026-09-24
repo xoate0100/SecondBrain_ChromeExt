@@ -11,4 +11,3 @@
 - **Large changeset warning**: If >20 files changed since last commit, pre-commit will warn (consider committing sooner)
 - **Never accumulate**: Don't wait until end of session - commit early and often
 - **Reference**: See `docs/COMMIT_STRATEGY.md` for detailed commit frequency best practices
-

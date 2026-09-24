@@ -6,4 +6,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: echo "Generate SBOM & vulnerability report (advisory by default)."
-

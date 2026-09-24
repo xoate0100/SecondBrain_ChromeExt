@@ -3,4 +3,3 @@
   "build": { "dockerfile": "Dockerfile" },
   "postCreateCommand": "pipx install pre-commit || true"
 }
-
