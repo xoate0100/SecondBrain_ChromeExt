@@ -1,0 +1,36 @@
+{
+  "intent_id": "close-the-stalls-v1-task-4-shell-exec",
+  "actor": "cursor_ai",
+  "plan_id": "close-the-stalls-v1",
+  "forbidden_actions": [
+    "touch web-app",
+    "use --no-verify",
+    "merge red",
+    "weaken checks"
+  ],
+  "risk_level": "medium",
+  "task_id": 4,
+  "intent": "Switch pre-commit .sh entries to python3 .py; mark .sh 100755",
+  "expected_outputs": [
+    ".pre-commit-config.yaml",
+    "3_bootstrap_scripts/"
+  ],
+  "intended_changes": [
+    {
+      "action": "update",
+      "path": ".pre-commit-config.yaml"
+    },
+    {
+      "action": "update",
+      "path": "3_bootstrap_scripts/"
+    }
+  ],
+  "component": "factory",
+  "state_files_read": [
+    "control/PLAN_AUTHORIZATION.yaml",
+    "6_ai_runtime_context/ACTIVE_PLAN.yaml",
+    "6_ai_runtime_context/ACTIVE_TASK_POINTER.yaml"
+  ],
+  "permissions_checked": true,
+  "timestamp": "2026-11-21T00:41:02Z"
+}
