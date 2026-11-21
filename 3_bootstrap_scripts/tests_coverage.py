@@ -91,7 +91,7 @@ def main() -> int:
     status = 0
 
     # README-only / placeholder backend (no .py, no tests): do not invoke
-    # pytest — exit 5 (no tests collected) was bricking second-brain spokes.
+    # pytest - exit 5 (no tests collected) was bricking second-brain spokes.
     if backend_has_python() or has_collectable_tests():
         cov_backend = backend_has_python()
         coverage_file = Path("coverage-backend.dat").resolve()
@@ -136,7 +136,7 @@ def main() -> int:
                     )
                     status = 1
     elif Path("backend").is_dir():
-        print("[tests-coverage] placeholder backend; no collectable tests — OK")
+        print("[tests-coverage] placeholder backend; no collectable tests - OK")
 
     if Path("frontend/package.json").is_file():
         npm_ci = run_subprocess(["npm", "ci", "--silent"], cwd="frontend", timeout=PIP_TIMEOUT)
