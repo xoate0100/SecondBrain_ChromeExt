@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import sys, re, pathlib
+import pathlib
+import re
+import sys
 
 try:
     import yaml
@@ -25,13 +27,15 @@ if flags_path.exists():
 
 violations = []
 
+
 def check_cross_component_imports():
     # Simple heuristic: forbid strings like "from backend" inside frontend, etc.
     for comp, cfg in RULES["components"].items():
         forbid = cfg.get("forbid_import", [])
-        dirs = {"frontend":"frontend", "backend":"backend", "shared":"shared"}
+        dirs = {"frontend": "frontend", "backend": "backend", "shared": "shared"}
         root = pathlib.Path(dirs.get(comp, ""))
-        if not root or not root.exists(): continue
+        if not root or not root.exists():
+            continue
         extensions = [".ts", ".tsx", ".js", ".py", ".java", ".cs"]
         for p in root.rglob("*"):
             if p.suffix not in extensions:
@@ -44,6 +48,7 @@ def check_cross_component_imports():
                 if re.search(rf'\bfrom\s+{bad}\b|\brequire\(["\']{bad}', text):
                     violations.append(f"{p}: illegal import of {bad} in {comp}")
 
+
 def check_layer_rules():
     # Minimal: forbid 'db' keyword in api/domain layers (heuristic)
     forbid = set(RULES.get("rules", {}).get("forbid_db_calls_from", []))
@@ -52,11 +57,13 @@ def check_layer_rules():
         if layer_name not in forbid:
             continue
         root = pathlib.Path(f"backend/src/{layer_name}")
-        if not root.exists(): continue
+        if not root.exists():
+            continue
         for p in root.rglob("*.py"):
             t = p.read_text(encoding="utf-8", errors="ignore")
-            if re.search(r'\b(sql|cursor|Session|insert|update|delete)\b', t):
+            if re.search(r"\b(sql|cursor|Session|insert|update|delete)\b", t):
                 violations.append(f"{p}: DB-like access in {layer_name} layer")
+
 
 def check_srp_single_responsibility():
     """SRP: Flag functions > 50 lines"""
@@ -87,7 +94,7 @@ def check_srp_single_responsibility():
 
                 for i, line in enumerate(lines, 1):
                     # Detect function start (Python)
-                    if re.match(r'^\s*(def|async def)\s+\w+', line):
+                    if re.match(r"^\s*(def|async def)\s+\w+", line):
                         if in_function:
                             # Previous function ended without explicit return
                             if i - function_start > 50:
@@ -98,12 +105,14 @@ def check_srp_single_responsibility():
                                 )
                         in_function = True
                         function_start = i
-                        function_name = re.search(r'(def|async def)\s+(\w+)', line).group(2)
+                        function_name = re.search(r"(def|async def)\s+(\w+)", line).group(2)
                         brace_count = 0
-                        paren_count = line.count('(') - line.count(')')
+                        paren_count = line.count("(") - line.count(")")
 
                     # Detect function start (TypeScript/JavaScript)
-                    elif re.match(r'^\s*(export\s+)?(function|const|let|var)\s+\w+.*[=:]\s*\(', line):
+                    elif re.match(
+                        r"^\s*(export\s+)?(function|const|let|var)\s+\w+.*[=:]\s*\(", line
+                    ):
                         if in_function and i - function_start > 50:
                             violations.append(
                                 f"{file_path}:{function_start} SRP violation: "
@@ -112,20 +121,20 @@ def check_srp_single_responsibility():
                             )
                         in_function = True
                         function_start = i
-                        match = re.search(r'(?:function|const|let|var)\s+(\w+)', line)
+                        match = re.search(r"(?:function|const|let|var)\s+(\w+)", line)
                         function_name = match.group(1) if match else "anonymous"
-                        brace_count = line.count('{') - line.count('}')
-                        paren_count = line.count('(') - line.count(')')
+                        brace_count = line.count("{") - line.count("}")
+                        paren_count = line.count("(") - line.count(")")
 
                     if in_function:
                         # Track braces and parentheses
-                        brace_count += line.count('{') - line.count('}')
-                        paren_count += line.count('(') - line.count(')')
+                        brace_count += line.count("{") - line.count("}")
+                        paren_count += line.count("(") - line.count(")")
 
                         # Function ends when braces/parentheses balance and we hit a dedent or semicolon
                         if file_path.suffix == ".py":
                             # Python: function ends at next def/class or significant dedent
-                            if i > function_start and re.match(r'^\s*(def|class|async def)', line):
+                            if i > function_start and re.match(r"^\s*(def|class|async def)", line):
                                 if i - 1 - function_start > 50:
                                     violations.append(
                                         f"{file_path}:{function_start} SRP violation: "
@@ -180,20 +189,22 @@ def check_isp_interface_segregation():
                 # Find interface and type definitions
                 for i, line in enumerate(lines, 1):
                     # Match interface definitions
-                    interface_match = re.search(r'interface\s+(\w+)', line)
+                    interface_match = re.search(r"interface\s+(\w+)", line)
                     if interface_match:
                         interface_name = interface_match.group(1)
                         # Count methods/properties in interface
-                        brace_count = line.count('{') - line.count('}')
+                        brace_count = line.count("{") - line.count("}")
                         method_count = 0
                         j = i
 
                         while j < len(lines) and brace_count >= 0:
                             current_line = lines[j]
-                            brace_count += current_line.count('{') - current_line.count('}')
+                            brace_count += current_line.count("{") - current_line.count("}")
 
                             # Count method/property definitions
-                            if re.search(r'^\s*\w+.*[:?]\s*[^;]', current_line) or re.search(r'^\s*\w+\s*\(', current_line):
+                            if re.search(r"^\s*\w+.*[:?]\s*[^;]", current_line) or re.search(
+                                r"^\s*\w+\s*\(", current_line
+                            ):
                                 method_count += 1
 
                             if brace_count < 0:
@@ -208,18 +219,18 @@ def check_isp_interface_segregation():
                             )
 
                     # Match type definitions (TypeScript)
-                    type_match = re.search(r'type\s+(\w+)\s*=\s*\{', line)
+                    type_match = re.search(r"type\s+(\w+)\s*=\s*\{", line)
                     if type_match:
                         type_name = type_match.group(1)
-                        brace_count = line.count('{') - line.count('}')
+                        brace_count = line.count("{") - line.count("}")
                         method_count = 0
                         j = i
 
                         while j < len(lines) and brace_count >= 0:
                             current_line = lines[j]
-                            brace_count += current_line.count('{') - current_line.count('}')
+                            brace_count += current_line.count("{") - current_line.count("}")
 
-                            if re.search(r'^\s*\w+.*[:?]\s*[^;]', current_line):
+                            if re.search(r"^\s*\w+.*[:?]\s*[^;]", current_line):
                                 method_count += 1
 
                             if brace_count < 0:
@@ -248,10 +259,13 @@ def check_dip_dependency_inversion():
 
     # Patterns that suggest concrete implementation imports
     concrete_patterns = [
-        (r'from\s+[\w.]+\.models\.', "models"),  # Direct model imports
-        (r'from\s+[\w.]+\.services\.', "services"),  # Direct service imports
-        (r'from\s+[\w.]+\.repositories\.', "repositories"),  # Direct repository imports
-        (r'import\s+.*from\s+["\']([\w/]+/)?(models|services|repositories)', "concrete"),  # JS/TS imports
+        (r"from\s+[\w.]+\.models\.", "models"),  # Direct model imports
+        (r"from\s+[\w.]+\.services\.", "services"),  # Direct service imports
+        (r"from\s+[\w.]+\.repositories\.", "repositories"),  # Direct repository imports
+        (
+            r'import\s+.*from\s+["\']([\w/]+/)?(models|services|repositories)',
+            "concrete",
+        ),  # JS/TS imports
     ]
 
     for root_dir in search_dirs:
@@ -268,7 +282,7 @@ def check_dip_dependency_inversion():
 
                 for i, line in enumerate(lines, 1):
                     # Skip if importing from interfaces/abstract
-                    if re.search(r'(interfaces|abstract|interfaces/)', line, re.IGNORECASE):
+                    if re.search(r"(interfaces|abstract|interfaces/)", line, re.IGNORECASE):
                         continue
 
                     # Check for concrete imports
@@ -276,7 +290,9 @@ def check_dip_dependency_inversion():
                         match = re.search(pattern, line)
                         if match:
                             # Extract the import path
-                            import_match = re.search(r'from\s+["\']?([\w./]+)', line) or re.search(r'import\s+.*from\s+["\']([\w./]+)', line)
+                            import_match = re.search(r'from\s+["\']?([\w./]+)', line) or re.search(
+                                r'import\s+.*from\s+["\']([\w./]+)', line
+                            )
                             if import_match:
                                 import_path = import_match.group(1)
                                 violations.append(
@@ -304,7 +320,9 @@ if enforce_solid:
 if violations:
     print("[architecture] ❌ BLOCKING: Architecture violations detected:")
     print("\n".join(f"  - {v}" for v in violations))
-    print("\n[architecture] Fix violations before committing. See 1_global_standards/SOLID_PRINCIPLES.md for guidance.")
+    print(
+        "\n[architecture] Fix violations before committing. See 1_global_standards/SOLID_PRINCIPLES.md for guidance."
+    )
     sys.exit(1)
 
 print("[architecture] ✅ All checks passed")

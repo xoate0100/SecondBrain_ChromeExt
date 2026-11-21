@@ -11,7 +11,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from pre_commit_utils import MAX_FILE_SIZE, files_from_argv_or_staged, norm_path, run_subprocess  # noqa: E402
+from pre_commit_utils import (  # noqa: E402
+    MAX_FILE_SIZE,
+    files_from_argv_or_staged,
+    norm_path,
+    run_subprocess,
+)
 
 SECRET_PATTERN = re.compile(
     r"(AWS_SECRET|BEGIN RSA PRIVATE KEY|password\s*=|api_key\s*=)",
@@ -21,8 +26,19 @@ SECRET_PATTERN = re.compile(
 # Pattern-definition modules embed the regex literals; scanning them is a self-hit.
 PATTERN_DEFINITION_FILES = {
     "3_bootstrap_scripts/security_scan.py",
+    "3_bootstrap_scripts/security_scan.sh",
     "agent_platform/security.py",
 }
+
+
+def _is_pattern_definition(fwd: str) -> bool:
+    """True for modules that embed SECRET_PATTERN literals (self-hit)."""
+    posix = fwd.replace("\\", "/")
+    if posix in PATTERN_DEFINITION_FILES:
+        return True
+    return any(
+        posix.endswith("/" + name) or posix.endswith(name) for name in PATTERN_DEFINITION_FILES
+    )
 
 
 def scan_staged_files(files: list[str]) -> list[str]:
@@ -31,7 +47,7 @@ def scan_staged_files(files: list[str]) -> list[str]:
         fwd = norm_path(file_path)
         if fwd.endswith(".md"):
             continue
-        if fwd in PATTERN_DEFINITION_FILES:
+        if _is_pattern_definition(fwd):
             continue
         path = Path(file_path)
         if not path.is_file() or path.stat().st_size > MAX_FILE_SIZE:

@@ -3,8 +3,8 @@
 Gate enforcement module.
 Implements gate checks from feature_flags.yml (warn_on_performance_regression, warn_on_mutation_drop)
 """
-import sys
 import pathlib
+import sys
 
 try:
     import yaml

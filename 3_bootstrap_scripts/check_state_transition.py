@@ -7,10 +7,10 @@ BLOCKING: Ensures that if ACTIVE_TASK_POINTER.yaml changed:
 2. A transition event was appended to state_transition_log.jsonl
 3. The transition was made via auto_advance_state.py (not direct edit)
 """
-import sys
-import pathlib
 import json
+import pathlib
 import subprocess
+import sys
 
 try:
     import yaml
@@ -23,10 +23,7 @@ except ImportError:
 def get_staged_files() -> list[str]:
     """Get list of staged files"""
     try:
-        output = subprocess.check_output(
-            ["git", "diff", "--cached", "--name-only"],
-            text=True
-        )
+        output = subprocess.check_output(["git", "diff", "--cached", "--name-only"], text=True)
         return [f.strip() for f in output.splitlines() if f.strip()]
     except subprocess.CalledProcessError:
         return []
@@ -36,8 +33,7 @@ def get_pointer_diff() -> tuple[dict, dict]:
     """Get old and new pointer values from git diff"""
     try:
         output = subprocess.check_output(
-            ["git", "diff", "--cached", "6_ai_runtime_context/ACTIVE_TASK_POINTER.yaml"],
-            text=True
+            ["git", "diff", "--cached", "6_ai_runtime_context/ACTIVE_TASK_POINTER.yaml"], text=True
         )
 
         old_pointer = {}
@@ -60,7 +56,9 @@ def get_pointer_diff() -> tuple[dict, dict]:
 
 def check_completion_report_exists(task_id: int, project_root: pathlib.Path) -> bool:
     """Check if completion report exists for task"""
-    report_path = project_root / "6_ai_runtime_context" / "TASK_COMPLETION_REPORTS" / f"task_{task_id}.md"
+    report_path = (
+        project_root / "6_ai_runtime_context" / "TASK_COMPLETION_REPORTS" / f"task_{task_id}.md"
+    )
     return report_path.exists()
 
 
@@ -153,7 +151,9 @@ def main() -> int:
 
     if "current_task" not in old_pointer or "current_task" not in new_pointer:
         # Couldn't parse diff, try loading current and checking git
-        print("[state-transition-check] WARN: Could not parse pointer diff, attempting alternative check")
+        print(
+            "[state-transition-check] WARN: Could not parse pointer diff, attempting alternative check"
+        )
 
         # Load current pointer
         if pointer_path.exists():
@@ -163,9 +163,15 @@ def main() -> int:
                     current_task = current_pointer.get("current_task")
 
                     # Check if completion report exists
-                    if current_task and not check_completion_report_exists(current_task, project_root):
-                        print(f"[state-transition-check] WARN: No completion report for task {current_task}")
-                        print("[state-transition-check] State transitions should use: python3 3_bootstrap_scripts/auto_advance_state.py")
+                    if current_task and not check_completion_report_exists(
+                        current_task, project_root
+                    ):
+                        print(
+                            f"[state-transition-check] WARN: No completion report for task {current_task}"
+                        )
+                        print(
+                            "[state-transition-check] State transitions should use: python3 3_bootstrap_scripts/auto_advance_state.py"
+                        )
             except Exception:
                 pass
 
@@ -205,7 +211,9 @@ def main() -> int:
     # Check 1: Completion report exists for from_task
     if not check_completion_report_exists(from_task, project_root):
         errors.append(f"Missing completion report for task {from_task}")
-        errors.append(f"  Expected: 6_ai_runtime_context/TASK_COMPLETION_REPORTS/task_{from_task}.md")
+        errors.append(
+            f"  Expected: 6_ai_runtime_context/TASK_COMPLETION_REPORTS/task_{from_task}.md"
+        )
 
     # Check 2: Transition was logged
     if not check_transition_logged(from_task, to_task, project_root):

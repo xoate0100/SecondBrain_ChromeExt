@@ -86,9 +86,7 @@ def run_prettier(files: list[str]) -> int:
 def main() -> int:
     files = files_from_argv_or_staged(sys.argv)
     py_files = [f for f in files if norm_path(f).endswith(".py")]
-    js_files = [
-        f for f in files if norm_path(f).endswith((".ts", ".tsx", ".js", ".jsx"))
-    ]
+    js_files = [f for f in files if norm_path(f).endswith((".ts", ".tsx", ".js", ".jsx"))]
 
     status = 0
     if py_files:

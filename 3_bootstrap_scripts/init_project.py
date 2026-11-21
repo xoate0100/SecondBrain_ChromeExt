@@ -3,16 +3,16 @@
 Project initialization script.
 Implements the full initialization flow as described in expected_flow.md
 """
-import sys
-import os
-import subprocess
 import json
+import os
 import pathlib
+import subprocess
+import sys
 from datetime import datetime
 
 try:
-    import yaml
     import jsonschema
+    import yaml
     from jsonschema import validate
 except ImportError as e:
     print(f"❌ Missing dependency: {e}")
@@ -36,7 +36,7 @@ def load_meta_framework():
         "feature_flags.yml",
         "AI_SANDBOX_RULES.md",
         "AI_EXECUTION_CONSTRAINTS.md",
-        "MVP_SPECIFICATION.yaml"
+        "MVP_SPECIFICATION.yaml",
     ]
 
     missing = []
@@ -110,10 +110,19 @@ def extract_write_paths_from_layout(mvp_spec):
 
     # Meta-framework directories that should be excluded (already in readonly)
     excluded = {
-        "0_phase0_bootstrap", "1_global_standards", "2_framework_templates",
-        "3_bootstrap_scripts", "4_docs_index", "5_reference_architectures",
-        "6_ai_runtime_context", "7_schemas", "8_ci", ".github", "ai_reports",
-        "scripts", "shared"  # scripts is for script files, shared is for shared types/utils
+        "0_phase0_bootstrap",
+        "1_global_standards",
+        "2_framework_templates",
+        "3_bootstrap_scripts",
+        "4_docs_index",
+        "5_reference_architectures",
+        "6_ai_runtime_context",
+        "7_schemas",
+        "8_ci",
+        ".github",
+        "ai_reports",
+        "scripts",
+        "shared",  # scripts is for script files, shared is for shared types/utils
     }
 
     def extract_paths(obj, prefix="", depth=0, max_depth=3):
@@ -225,11 +234,7 @@ def update_feature_flags_from_mvp_spec(feature_flags, mvp_spec):
     components = feature_flags.get("components", {})
 
     # Map TECH_STACK component names to feature_flags component names
-    tech_to_components = {
-        "frontend": "frontend",
-        "backend": "backend",
-        "shared": "shared"
-    }
+    tech_to_components = {"frontend": "frontend", "backend": "backend", "shared": "shared"}
 
     for tech_key, component_name in tech_to_components.items():
         if tech_key in tech_stack and component_name in components:
@@ -277,8 +282,9 @@ def setup_environment():
     # Install Python dependencies
     if pathlib.Path("requirements.txt").exists():
         try:
-            subprocess.run(["pip", "install", "-r", "requirements.txt"],
-                         check=True, capture_output=True)
+            subprocess.run(
+                ["pip", "install", "-r", "requirements.txt"], check=True, capture_output=True
+            )
         except subprocess.CalledProcessError:
             print("⚠️  Failed to install Python dependencies (may need virtualenv)")
 
@@ -369,11 +375,7 @@ def generate_active_plan(mvp_spec):
         yaml.dump(plan_template, f, default_flow_style=False, sort_keys=False)
 
     # Write ACTIVE_TASK_POINTER.yaml
-    task_pointer = {
-        "current_task": 1,
-        "status": "in_progress",
-        "last_run": None
-    }
+    task_pointer = {"current_task": 1, "status": "in_progress", "last_run": None}
     with open(runtime_dir / "ACTIVE_TASK_POINTER.yaml", "w") as f:
         yaml.dump(task_pointer, f, default_flow_style=False)
 
@@ -392,10 +394,7 @@ def init_ai_context():
 
     # Initialize MEMORY_STATE.yaml if it doesn't exist
     if not (runtime_dir / "MEMORY_STATE.yaml").exists():
-        memory_state = {
-            "recent_plans": [],
-            "metrics": {"first_pass_commit_success_rate": 0}
-        }
+        memory_state = {"recent_plans": [], "metrics": {"first_pass_commit_success_rate": 0}}
         with open(runtime_dir / "MEMORY_STATE.yaml", "w") as f:
             yaml.dump(memory_state, f, default_flow_style=False)
 
@@ -416,20 +415,14 @@ def run_self_checks():
     """STEP 10: Run schema enforcement and health checks"""
     scripts_dir = pathlib.Path("3_bootstrap_scripts")
 
-    checks = [
-        "schema_enforcement.py",
-        "architecture_check.py",
-        "ai_behavior_validation.py"
-    ]
+    checks = ["schema_enforcement.py", "architecture_check.py", "ai_behavior_validation.py"]
 
     for script in checks:
         script_path = scripts_dir / script
         if script_path.exists():
             try:
                 result = subprocess.run(
-                    ["python3", str(script_path)],
-                    capture_output=True,
-                    text=True
+                    ["python3", str(script_path)], capture_output=True, text=True
                 )
                 if result.returncode != 0:
                     print(f"⚠️  {script} reported issues (non-blocking)")
@@ -455,7 +448,7 @@ def generate_init_report(feature_flags):
         "plan_id": plan.get("plan_id", "unknown"),
         "component": plan.get("component", "unknown"),
         "sandbox": feature_flags.get("mode", {}).get("cursor_agent_mode", "unknown"),
-        "result": "success"
+        "result": "success",
     }
 
     with open(reports_dir / "init_report.json", "w") as f:
@@ -510,6 +503,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Initialization failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
