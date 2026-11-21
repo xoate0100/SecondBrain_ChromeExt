@@ -29,24 +29,38 @@ def _formatters_ready() -> bool:
     )
 
 
+def _ensure_formatters() -> int:
+    """Install pinned black/isort; retry once for parallel pip races on CI."""
+    if _formatters_ready():
+        return 0
+    cmd = [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "--quiet",
+        "black==24.10.0",
+        "isort==5.13.2",
+    ]
+    pip = run_subprocess(cmd, timeout=PIP_TIMEOUT)
+    if pip.returncode == 0 and _formatters_ready():
+        return 0
+    # Parallel pre-commit workers can collide on site-packages; brief retry.
+    import time
+
+    time.sleep(2)
+    pip = run_subprocess(cmd, timeout=PIP_TIMEOUT)
+    if pip.returncode != 0:
+        return pip.returncode
+    return 0 if _formatters_ready() else 1
+
+
 def run_python_formatters(py_files: list[str]) -> int:
     if not py_files:
         return 0
-    if not _formatters_ready():
-        pip = run_subprocess(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "--quiet",
-                "black==24.10.0",
-                "isort==5.13.2",
-            ],
-            timeout=PIP_TIMEOUT,
-        )
-        if pip.returncode != 0:
-            return pip.returncode
+    ensure = _ensure_formatters()
+    if ensure != 0:
+        return ensure
 
     # isort first, black last: black must be the final writer so the
     # style hook is idempotent (isort-after-black left imports that
