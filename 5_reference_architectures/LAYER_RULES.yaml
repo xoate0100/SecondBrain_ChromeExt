@@ -20,4 +20,3 @@ layers:
 rules:
   forbid_db_calls_from: [api, domain]
   require_di_for: [api, domain, infra]
-

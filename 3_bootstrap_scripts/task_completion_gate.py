@@ -5,13 +5,13 @@ Task Completion Gate - Blocking validation before state advancement.
 Validates all gates (GATE-1 through GATE-6) before allowing task completion
 and state transition. Generates completion report artifact.
 """
-import sys
+import json
 import os
 import pathlib
 import subprocess
-import json
+import sys
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 try:
     import yaml
@@ -47,10 +47,7 @@ def load_json(path: pathlib.Path) -> Optional[Dict]:
 def get_staged_files() -> List[str]:
     """Get list of staged files"""
     try:
-        output = subprocess.check_output(
-            ["git", "diff", "--cached", "--name-only"],
-            text=True
-        )
+        output = subprocess.check_output(["git", "diff", "--cached", "--name-only"], text=True)
         return [f.strip() for f in output.splitlines() if f.strip()]
     except subprocess.CalledProcessError:
         return []
@@ -59,10 +56,7 @@ def get_staged_files() -> List[str]:
 def get_working_tree_files() -> List[str]:
     """Get list of modified files in working tree"""
     try:
-        output = subprocess.check_output(
-            ["git", "diff", "--name-only"],
-            text=True
-        )
+        output = subprocess.check_output(["git", "diff", "--name-only"], text=True)
         return [f.strip() for f in output.splitlines() if f.strip()]
     except subprocess.CalledProcessError:
         return []
@@ -92,7 +86,7 @@ def check_gate_1_state_read_proof(intent: Dict) -> Tuple[bool, str]:
     """
     required_files = [
         "6_ai_runtime_context/ACTIVE_PLAN.yaml",
-        "6_ai_runtime_context/ACTIVE_TASK_POINTER.yaml"
+        "6_ai_runtime_context/ACTIVE_TASK_POINTER.yaml",
     ]
 
     state_files_read = intent.get("state_files_read", [])
@@ -112,11 +106,16 @@ def check_gate_2_task_identity_match(intent: Dict, pointer: Dict) -> Tuple[bool,
     current_task_id = pointer.get("current_task")
 
     if str(intent_task_id) != str(current_task_id):
-        return False, f"GATE-2 FAILED: Task ID mismatch - Intent: {intent_task_id}, Current: {current_task_id}"
+        return (
+            False,
+            f"GATE-2 FAILED: Task ID mismatch - Intent: {intent_task_id}, Current: {current_task_id}",
+        )
     return True, f"GATE-2 PASSED: Task ID matches ({current_task_id})"
 
 
-def check_gate_3_outputs_present(plan: Dict, pointer: Dict, project_root: pathlib.Path) -> Tuple[bool, str, List[str]]:
+def check_gate_3_outputs_present(
+    plan: Dict, pointer: Dict, project_root: pathlib.Path
+) -> Tuple[bool, str, List[str]]:
     """
     GATE-3: Outputs Present
     Every output path from current task MUST exist.
@@ -148,7 +147,7 @@ def check_gate_4_scope_compliance(
     pointer: Dict,
     staged_files: List[str],
     feature_flags: Dict,
-    project_root: pathlib.Path
+    project_root: pathlib.Path,
 ) -> Tuple[bool, str, List[str]]:
     """
     GATE-4: Scope Compliance (Strict Mode)
@@ -208,18 +207,19 @@ def check_gate_4_scope_compliance(
         if in_elevated and matches_output:
             continue
         if not in_allowed:
-            violations.append({
-                "path": file_path,
-                "reason": f"Not in allowed write paths: {list(allowed_paths)}"
-            })
+            violations.append(
+                {"path": file_path, "reason": f"Not in allowed write paths: {list(allowed_paths)}"}
+            )
             continue
 
         # Check if matches expected outputs (strict mode)
-        violations.append({
-            "path": file_path,
-            "reason": f"Not in task outputs: {expected_outputs}",
-            "expected_outputs": expected_outputs
-        })
+        violations.append(
+            {
+                "path": file_path,
+                "reason": f"Not in task outputs: {expected_outputs}",
+                "expected_outputs": expected_outputs,
+            }
+        )
 
     if violations:
         violation_paths = [v["path"] for v in violations]
@@ -245,10 +245,7 @@ def check_gate_5_precommit_proof() -> Tuple[bool, str]:
 
 
 def generate_completion_report(
-    task_id: int,
-    plan: Dict,
-    gate_results: List[Dict],
-    project_root: pathlib.Path
+    task_id: int, plan: Dict, gate_results: List[Dict], project_root: pathlib.Path
 ) -> Tuple[bool, pathlib.Path]:
     """
     GATE-6: Completion Artifact
@@ -389,13 +386,19 @@ def main() -> int:
         "tests/test_task_completion_gate_advance.py",
     )
     non_advance = [
-        f for f in staged_files
-        if not any(f.replace("\\", "/").startswith(p) or f.replace("\\", "/") == p for p in advance_only_prefixes)
+        f
+        for f in staged_files
+        if not any(
+            f.replace("\\", "/").startswith(p) or f.replace("\\", "/") == p
+            for p in advance_only_prefixes
+        )
     ]
     if not non_advance and any(
         f.replace("\\", "/").endswith("ACTIVE_TASK_POINTER.yaml") for f in staged_files
     ):
-        print("[gate] INFO: advance-only changeset (pointer/transition log); skipping output/scope gates")
+        print(
+            "[gate] INFO: advance-only changeset (pointer/transition log); skipping output/scope gates"
+        )
         return 0
 
     # Filter to code files only (exclude state files)
@@ -418,7 +421,9 @@ def main() -> int:
         if not passed:
             print(f"[gate] {message}")
     else:
-        gate_results.append({"gate": "GATE-1", "passed": False, "message": "INTENT_DECLARATION.json missing"})
+        gate_results.append(
+            {"gate": "GATE-1", "passed": False, "message": "INTENT_DECLARATION.json missing"}
+        )
         print("[gate] GATE-1 FAILED: INTENT_DECLARATION.json missing")
 
     # GATE-2: Task Identity Match
@@ -428,11 +433,15 @@ def main() -> int:
         if not passed:
             print(f"[gate] {message}")
     else:
-        gate_results.append({"gate": "GATE-2", "passed": False, "message": "INTENT_DECLARATION.json missing"})
+        gate_results.append(
+            {"gate": "GATE-2", "passed": False, "message": "INTENT_DECLARATION.json missing"}
+        )
 
     # GATE-3: Outputs Present
     passed, message, missing = check_gate_3_outputs_present(plan, pointer, project_root)
-    gate_results.append({"gate": "GATE-3", "passed": passed, "message": message, "missing": missing})
+    gate_results.append(
+        {"gate": "GATE-3", "passed": passed, "message": message, "missing": missing}
+    )
     if not passed:
         print(f"[gate] {message}")
         if missing:
@@ -441,8 +450,12 @@ def main() -> int:
                 print(f"  - {output}")
 
     # GATE-4: Scope Compliance
-    passed, message, violations = check_gate_4_scope_compliance(plan, pointer, staged_files, feature_flags, project_root)
-    gate_results.append({"gate": "GATE-4", "passed": passed, "message": message, "violations": violations})
+    passed, message, violations = check_gate_4_scope_compliance(
+        plan, pointer, staged_files, feature_flags, project_root
+    )
+    gate_results.append(
+        {"gate": "GATE-4", "passed": passed, "message": message, "violations": violations}
+    )
     if not passed:
         print(f"[gate] {message}")
         if violations:
@@ -452,7 +465,9 @@ def main() -> int:
             if len(violations) > 10:
                 print(f"  ... and {len(violations) - 10} more")
             print("[gate] Remediation:")
-            print("  1. Update ACTIVE_PLAN.yaml to include these paths in task.outputs (human action)")
+            print(
+                "  1. Update ACTIVE_PLAN.yaml to include these paths in task.outputs (human action)"
+            )
             print("  2. Remove violating files from staged changes")
             print("  3. Update INTENT_DECLARATION.json to match actual changes")
 
@@ -463,8 +478,12 @@ def main() -> int:
         print(f"[gate] {message}")
 
     # GATE-6: Generate Completion Report
-    success, report_path = generate_completion_report(current_task_id, plan, gate_results, project_root)
-    gate_results.append({"gate": "GATE-6", "passed": success, "message": f"Completion report: {report_path}"})
+    success, report_path = generate_completion_report(
+        current_task_id, plan, gate_results, project_root
+    )
+    gate_results.append(
+        {"gate": "GATE-6", "passed": success, "message": f"Completion report: {report_path}"}
+    )
     if not success:
         print(f"[gate] GATE-6 FAILED: Could not generate completion report")
 
