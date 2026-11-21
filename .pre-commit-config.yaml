@@ -18,25 +18,25 @@ repos:
     hooks:
       - id: syntax-checks
         name: Syntax & Structural Validation
-        entry: python3 3_bootstrap_scripts/validate_syntax.py
+        entry: 3_bootstrap_scripts/validate_syntax.sh
         language: system
         pass_filenames: true
         always_run: true
 
       - id: format-style
         name: Style Enforcement
-        entry: python3 3_bootstrap_scripts/enforce_format.py
+        entry: 3_bootstrap_scripts/enforce_format.sh
         language: system
         pass_filenames: true
 
       - id: static-analysis
         name: Type & Static Analysis
-        entry: python3 3_bootstrap_scripts/static_analysis.py
+        entry: 3_bootstrap_scripts/static_analysis.sh
         language: system
 
       - id: security-scan
         name: Security & Secrets
-        entry: python3 3_bootstrap_scripts/security_scan.py
+        entry: 3_bootstrap_scripts/security_scan.sh
         language: system
 
       - id: architecture-check
@@ -63,7 +63,7 @@ repos:
 
       - id: tests-and-coverage
         name: Tests & Coverage
-        entry: python3 3_bootstrap_scripts/tests_coverage.py
+        entry: 3_bootstrap_scripts/tests_coverage.sh
         language: system
 
       - id: documentation-sync
@@ -78,12 +78,12 @@ repos:
 
       - id: performance-scan
         name: Performance Scan
-        entry: python3 3_bootstrap_scripts/performance_scan.py
+        entry: 3_bootstrap_scripts/performance_scan.sh
         language: system
 
       - id: commit-message-validator
         name: Commit Message Validator
-        entry: python3 3_bootstrap_scripts/commit_validator.py
+        entry: 3_bootstrap_scripts/commit_validator.sh
         language: system
 
       - id: large-changeset-warning
